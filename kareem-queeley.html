@@ -131,6 +131,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .vt-off{background:var(--blue-dim);color:var(--blue)}
 .vt-sht{background:rgba(74,222,128,0.1);color:#4ade80}
 .new-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 7px rgba(0,131,72,0.6)}
+.video-note{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .video-empty{background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:32px;text-align:center;color:var(--muted);font-size:12px}
 
 /* STRENGTH */
@@ -156,6 +157,18 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .note-date{font-size:10px;color:var(--muted)}
 .note-text{font-size:12px;color:var(--offwhite-mid);line-height:1.55}
 .footer{text-align:center;padding:40px 24px 20px;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.vo-prev{padding:20px 24px 32px;background:#080f0b;border-top:1px solid var(--border-soft)}
+.vo-prev-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.vo-prev-label::before{content:"";display:block;width:3px;height:13px;background:var(--green);border-radius:2px}
+.vo-prev-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vo-prev-card{background:var(--card);border:1px solid var(--border-soft);border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color 0.15s}
+.vo-prev-card:hover{border-color:var(--border);background:var(--card2)}
+.vo-prev-thumb{width:48px;height:32px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.vo-prev-play{width:18px;height:18px;background:rgba(250,249,246,0.85);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.vo-prev-play::after{content:"";display:block;width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid #080f0b;margin-left:1.5px}
+.vo-prev-info{}
+.vo-prev-title{font-size:12px;font-weight:600;color:var(--offwhite);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.vo-prev-sub{font-size:10px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -172,7 +185,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 </div>
 
 <!-- VIDEO OVERLAY -->
-<div id="video-overlay">
+<div id="video-overlay" style="overflow-y:auto">
   <div class="vo-header">
     <div>
       <div class="vo-title" id="vo-title"></div>
@@ -186,6 +199,10 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
   <div class="vo-note-bar" id="vo-note-bar" style="display:none">
     <div class="vo-note-label">Coaching Note</div>
     <div class="vo-note-text" id="vo-note-text"></div>
+  </div>
+  <div class="vo-prev" id="vo-prev" style="display:none">
+    <div class="vo-prev-label">Previous Clips</div>
+    <div class="vo-prev-grid" id="vo-prev-grid"></div>
   </div>
 </div>
 
@@ -296,13 +313,42 @@ function ytEmbed(url){
   return id?"https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0":"";
 }
 
-function openVideo(title,date,type,url){
+// Store all videos globally for previous clips
+let allVideos=[];
+
+function openVideo(title,date,type,url,note,idx){
   const embed=ytEmbed(url);
   if(!embed){window.open(url,"_blank");return;}
   document.getElementById("vo-title").textContent=title;
   document.getElementById("vo-meta").textContent=date+" · "+(type==="def"?"Defence":type==="off"?"Offence":"Shooting");
   document.getElementById("vo-iframe").src=embed;
+  const noteBar=document.getElementById("vo-note-bar");
+  if(note){document.getElementById("vo-note-text").textContent=note;noteBar.style.display="block";}
+  else{noteBar.style.display="none";}
+
+  // Populate previous clips (all except current)
+  const prev=allVideos.filter((_,i)=>i!==idx);
+  const prevSection=document.getElementById("vo-prev");
+  const prevGrid=document.getElementById("vo-prev-grid");
+  if(prev.length>0){
+    prevGrid.innerHTML=prev.map((v,i)=>{
+      const t=v[3]||"off";
+      const actualIdx=allVideos.indexOf(v);
+      return `<div class="vo-prev-card" onclick="openVideo('${(v[1]||"").replace(/'/g,"\'")}','${v[2]||""}','${t}','${v[4]||""}','${(v[6]||"").replace(/'/g,"\'")}',${actualIdx})">
+        <div class="vo-prev-thumb tv-${t}"><div class="vo-prev-play"></div></div>
+        <div class="vo-prev-info">
+          <div class="vo-prev-title">${v[1]||""}</div>
+          <div class="vo-prev-sub">${t==="def"?"Defence":t==="off"?"Offence":"Shooting"} · ${v[2]||""}</div>
+        </div>
+      </div>`;
+    }).join("");
+    prevSection.style.display="block";
+  } else {
+    prevSection.style.display="none";
+  }
+
   document.getElementById("video-overlay").style.display="flex";
+  document.getElementById("video-overlay").scrollTop=0;
   document.body.style.overflow="hidden";
 }
 
@@ -389,10 +435,11 @@ function render(rows){
   if(videoRows.length===0){
     vl.innerHTML=`<div class="video-empty">No video feedback yet — check back after your next session.</div>`;
   }else{
-    vl.innerHTML=videoRows.map(v=>{
+    allVideos=videoRows; // store globally for previous clips
+    vl.innerHTML=videoRows.map((v,idx)=>{
       const type=clean(v[3])||"off",isNew=clean(v[5])==="TRUE";
-      const url=clean(v[4]),title=clean(v[1]),date=clean(v[2]);
-      return `<div class="video-card" onclick="openVideo('${title.replace(/'/g,"\'")}','${date}','${type}','${url}')">
+      const url=clean(v[4]),title=clean(v[1]),date=clean(v[2]),note=clean(v[6])||"";
+      return `<div class="video-card" onclick="openVideo('${title.replace(/'/g,"\'")}','${date}','${type}','${url}','${note.replace(/'/g,"\'")}',${idx})">
         <div class="video-thumb tv-${type}"><div class="play-icon"></div></div>
         <div class="video-info">
           <div class="video-title">${title}</div>
@@ -400,6 +447,7 @@ function render(rows){
             <span class="video-date">${date}</span>
             <span class="video-tag vt-${type}">${type==="def"?"Defence":type==="off"?"Offence":"Shooting"}</span>
           </div>
+          ${note?`<div class="video-note">${note}</div>`:""}
         </div>
         ${isNew?`<div class="new-dot"></div>`:""}
       </div>`;
