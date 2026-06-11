@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/kareem-queeley", "destination": "/kareem-queeley.html" },
+    { "source": "/ollie-bishop",   "destination": "/ollie-bishop.html" }
+  ]
+}
