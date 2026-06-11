@@ -1,6 +1,15 @@
 {
   "rewrites": [
-    { "source": "/kareem-queeley", "destination": "/kareem-queeley.html" },
-    { "source": "/ollie-bishop",   "destination": "/ollie-bishop.html" }
+    {"source": "/kareem-queeley",     "destination": "/kareem-queeley.html"},
+    {"source": "/ollie-bishop",       "destination": "/ollie-bishop.html"},
+    {"source": "/dj-parkinson",       "destination": "/dj-parkinson.html"},
+    {"source": "/kino-lilly",         "destination": "/kino-lilly.html"},
+    {"source": "/tayo-ogedengbe",     "destination": "/tayo-ogedengbe.html"},
+    {"source": "/tim-nwankwo",        "destination": "/tim-nwankwo.html"},
+    {"source": "/haydn-ling",         "destination": "/haydn-ling.html"},
+    {"source": "/mike-graham",        "destination": "/mike-graham.html"},
+    {"source": "/andrew-lawrence",    "destination": "/andrew-lawrence.html"},
+    {"source": "/ronald-polite",      "destination": "/ronald-polite.html"},
+    {"source": "/nedas-cholevinskas", "destination": "/nedas-cholevinskas.html"}
   ]
 }
