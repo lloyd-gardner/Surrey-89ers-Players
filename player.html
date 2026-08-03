@@ -89,6 +89,58 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .sc-g{color:#4ade80}.sc-a{color:var(--amber)}.sc-r{color:var(--red)}
 .w-score-trend{font-size:10px;color:var(--muted);margin-top:3px}
 
+/* ===== DAILY CHECK-IN ===== */
+.ci-open{background:var(--green);color:#fff;border:0;border-radius:8px;padding:9px 16px;
+  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;letter-spacing:.5px;
+  text-transform:uppercase;cursor:pointer;transition:.15s;white-space:nowrap}
+.ci-open:hover{background:var(--green-dark)}
+.ci-open.due{animation:ciPulse 2.4s ease-in-out infinite}
+@keyframes ciPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,131,72,.55)}50%{box-shadow:0 0 0 9px rgba(0,131,72,0)}}
+.ci-done{font-size:11px;color:var(--muted)}
+
+.ci-overlay{position:fixed;inset:0;background:rgba(4,8,6,.82);backdrop-filter:blur(4px);
+  z-index:900;display:none;align-items:flex-end;justify-content:center}
+.ci-overlay.show{display:flex}
+@media(min-width:760px){.ci-overlay{align-items:center}}
+
+.ci-sheet{background:var(--card2);border:1px solid var(--border);width:100%;max-width:560px;
+  max-height:92vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:20px 20px 28px}
+@media(min-width:760px){.ci-sheet{border-radius:16px}}
+
+.ci-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.ci-title{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700}
+.ci-sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.ci-x{background:none;border:0;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;padding:0 4px}
+
+.ci-row{margin-bottom:16px}
+.ci-q{font-size:13px;font-weight:600;margin-bottom:2px}
+.ci-hint{font-size:11px;color:var(--muted);margin-bottom:7px}
+.ci-opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.ci-opt{background:var(--card);border:1px solid var(--border);color:var(--offwhite-mid);
+  border-radius:8px;padding:11px 0;font-size:15px;font-weight:700;cursor:pointer;transition:.12s;
+  font-family:"Space Grotesk",sans-serif}
+.ci-opt:hover{border-color:var(--green)}
+.ci-opt.sel{background:var(--green);border-color:var(--green);color:#fff}
+.ci-ends{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
+
+.ci-toggle{display:flex;gap:8px}
+.ci-toggle .ci-opt{flex:1;padding:10px 0;font-size:13px}
+
+.ci-note{width:100%;background:var(--card);border:1px solid var(--border);color:var(--offwhite);
+  border-radius:8px;padding:10px 12px;font-family:"Inter",sans-serif;font-size:13px;
+  resize:vertical;min-height:62px}
+.ci-note:focus{outline:none;border-color:var(--green)}
+
+.ci-submit{width:100%;background:var(--green);color:#fff;border:0;border-radius:10px;padding:15px;
+  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;
+  text-transform:uppercase;cursor:pointer;margin-top:6px;transition:.15s}
+.ci-submit:hover:not(:disabled){background:var(--green-dark)}
+.ci-submit:disabled{opacity:.55;cursor:default}
+.ci-msg{font-size:12px;text-align:center;margin-top:10px;min-height:16px}
+.ci-msg.ok{color:var(--green)}
+.ci-msg.bad{color:var(--red)}
+
+
 /* History row */
 .w-history{padding:10px 18px;display:flex;align-items:center;gap:14px}
 .w-history-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
@@ -227,7 +279,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
   <div class="content">
     <!-- WELLNESS -->
     <div class="section">
-      <div class="section-header"><div class="section-title">Daily Wellness</div><div class="section-note" id="w-submitted"></div></div>
+      <div class="section-header"><div class="section-title">Daily Wellness</div><div class="section-note" id="w-submitted"></div><button class="ci-open" id="ci-open" onclick="openCheckIn()">Check in</button></div>
       <div class="wellness-card">
         <div class="wellness-top">
           <div>
@@ -296,6 +348,10 @@ const SHEET_ID   = "1NqYAMc7L_yzaiTlms6SpjvhhoJqg19n5XYtj7IGcJqg";
 const ROSTER_TAB = "ROSTER";
 /* Season label shown on the portal. Update once here each new season. */
 const SEASON     = "2026-27";
+/* Where daily check-ins are sent — the Apps Script web app URL (ends in /exec) */
+const CHECKIN_ENDPOINT = "https://script.google.com/macros/s/AKfycbx-xVqT4EUY_ygD-AvzmfXE4EMcya1qlrsFtnKY7WzMaDTj-w9dwrH2Pbuvjbd6Mu0cKA/exec";
+const LOG_TAB = "WELLNESS LOG";
+const METRICS = ["sleep_quality","sleep_duration","soreness","mood","stress","energy"];
 
 /* Live read of any tab by NAME (not gid) so renaming/adding tabs just works.
    headers=0 stops Google guessing which row is a header and merging rows. */
@@ -457,8 +513,12 @@ async function loadPortal(){
   }
 
   try{
-    const res=await fetch(tabURL(player.tab));
+    const [res, logEntries] = await Promise.all([
+      fetch(tabURL(player.tab)),
+      loadWellnessLog(slug)
+    ]);
     if(!res.ok)throw new Error("fetch failed");
+    LOG_ENTRIES = logEntries;
     const rows=parseCSV(await res.text());
     render(rows,player);
   }catch(e){
@@ -477,6 +537,7 @@ function render(rows,player){
   document.getElementById("cover-number").textContent="#"+number;
   document.getElementById("player-name").textContent=name;
   document.getElementById("player-pos").textContent=position+" · #"+number;
+  window.PLAYER_NAME=name;
   document.getElementById("cover-badge").textContent="Surrey 89ers · Pro Team · "+SEASON;
   document.getElementById("season-tag").textContent="Season "+SEASON;
 
@@ -506,15 +567,8 @@ function render(rows,player){
     </div>`;
   }).join("");
 
-  const histKeys=["Mon","Tue","Wed","Thu","Fri","Mon2","Today"];
-  document.getElementById("w-history").innerHTML=histKeys.map((k,i)=>{
-    const r=rows.find(r=>clean(r[0])===k);
-    const a=r?parseFloat(clean(r[1])):0;
-    return `<div class="w-day ${i===histKeys.length-1?"today":""}">
-      <div class="w-day-label">${k==="Mon2"?"Mon":k}</div>
-      <div class="w-day-score ${scClass(a)}">${a}</div>
-    </div>`;
-  }).join("");
+  renderHistory(rows);
+  renderCheckInState();
 
   // FOCUS
   const focusRows=rows.filter(r=>clean(r[0])!=""&&clean(r[1])!=""&&["TRUE","FALSE"].includes(clean(r[2])));
@@ -586,7 +640,230 @@ function render(rows,player){
   document.getElementById("portal").style.display="block";
 }
 
+
+/* ============================================================
+   DAILY CHECK-IN
+   ============================================================ */
+
+var CI = {};
+var LOG_ENTRIES = [];
+
+function pick(btn){
+  var k = btn.getAttribute("data-k");
+  CI[k] = btn.getAttribute("data-v");
+  var group = btn.parentNode.querySelectorAll('[data-k="'+k+'"]');
+  for(var i=0;i<group.length;i++) group[i].classList.remove("sel");
+  btn.classList.add("sel");
+}
+
+function openCheckIn(){
+  var d = new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+  document.getElementById("ci-for").textContent = (window.PLAYER_NAME||"") + " · " + d;
+  document.getElementById("ci-overlay").classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCheckIn(){
+  document.getElementById("ci-overlay").classList.remove("show");
+  document.body.style.overflow = "";
+}
+
+async function submitCheckIn(){
+  var msg = document.getElementById("ci-msg");
+  var btn = document.getElementById("ci-submit");
+
+  var missing = METRICS.filter(function(k){ return !CI[k]; });
+  if(missing.length){
+    msg.className = "ci-msg bad";
+    msg.textContent = "Still to answer: " + missing.length + " question" + (missing.length>1?"s":"");
+    return;
+  }
+  if(CHECKIN_ENDPOINT.indexOf("http") !== 0){
+    msg.className = "ci-msg bad";
+    msg.textContent = "Check-in isn't switched on yet — ask your coach.";
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Saving...";
+  msg.className = "ci-msg"; msg.textContent = "";
+
+  var payload = {
+    type: "wellness",
+    slug: currentSlug(),
+    note: document.getElementById("ci-note").value || "",
+    treatment: CI.treatment || "No"
+  };
+  METRICS.forEach(function(k){ payload[k] = CI[k]; });
+
+  try{
+    /* text/plain keeps this a "simple" request so the browser skips the
+       CORS preflight that Apps Script cannot answer. */
+    var res = await fetch(CHECKIN_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    });
+    var out = await res.json();
+    if(!out.ok) throw new Error(out.error || "save failed");
+
+    msg.className = "ci-msg ok"; msg.textContent = "Saved. Thanks!";
+    btn.textContent = "Saved";
+    setTimeout(function(){
+      closeCheckIn();
+      btn.disabled = false; btn.textContent = "Submit check-in"; msg.textContent = "";
+      loadPortal();
+    }, 900);
+
+  }catch(err){
+    console.error("check-in failed", err);
+    btn.disabled = false; btn.textContent = "Submit check-in";
+    msg.className = "ci-msg bad";
+    msg.textContent = "Could not save — check your signal and try again.";
+  }
+}
+
+/* ---------- history ---------- */
+
+async function loadWellnessLog(slug){
+  try{
+    var res = await fetch(tabURL(LOG_TAB));
+    if(!res.ok) return [];
+    var rows = parseCSV(await res.text()).filter(function(r){ return r.some(function(c){return c!=="";}); });
+    if(rows.length < 2) return [];
+
+    /* Google blanks out the header cell for any column it decides is
+       numeric or a date, so fall back to the canonical column order. */
+    var LOG_COLS = ["timestamp","date","slug","name","sleep_quality","soreness",
+                    "mood","sleep_duration","stress","energy","treatment","note"];
+    var head = rows[0].map(function(h){ return h.toLowerCase().replace(/[^a-z_]/g,""); });
+    var at = function(name){
+      var i = head.indexOf(name);
+      return i >= 0 ? i : LOG_COLS.indexOf(name);
+    };
+    var iDate = at("date"), iSlug = at("slug");
+    if(iDate < 0 || iSlug < 0) return [];
+    var iM = METRICS.map(at);
+
+    return rows.slice(1).filter(function(r){
+      var sl = (r[iSlug]||"").toLowerCase().trim();
+      return sl === slug && sl !== "slug";
+    }).map(function(r){
+      return { date: r[iDate], scores: iM.map(function(i){ return i>=0 ? (parseFloat(r[i])||0) : 0; }) };
+    });
+  }catch(e){
+    console.error("wellness log not readable yet (normal before the first check-in):", e);
+    return [];
+  }
+}
+
+function dailyAverages(entries){
+  var byDate = {};
+  entries.forEach(function(e){
+    var good = e.scores.filter(function(n){ return n > 0; });
+    if(!good.length) return;
+    var avg = good.reduce(function(a,b){return a+b;},0) / good.length;
+    (byDate[e.date] = byDate[e.date] || []).push(avg);
+  });
+  return Object.keys(byDate).sort().map(function(d){
+    var xs = byDate[d];
+    return { date: d, avg: xs.reduce(function(a,b){return a+b;},0) / xs.length };
+  });
+}
+
+function shortDay(iso){
+  var p = String(iso).split("-");
+  if(p.length !== 3) return iso;
+  var d = new Date(+p[0], +p[1]-1, +p[2]);
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-GB",{weekday:"short"});
+}
+
+function todayISO(){
+  var d = new Date(), z = function(n){ return (n<10?"0":"")+n; };
+  return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());
+}
+
+function renderHistory(rows){
+  var el = document.getElementById("w-history");
+  var days = dailyAverages(LOG_ENTRIES).slice(-7);
+
+  if(days.length){
+    var today = todayISO();
+    el.innerHTML = days.map(function(d){
+      var v = Math.round(d.avg*10)/10;
+      return '<div class="w-day '+(d.date===today?"today":"")+'">'+
+               '<div class="w-day-label">'+shortDay(d.date)+'</div>'+
+               '<div class="w-day-score '+scClass(v)+'">'+v.toFixed(1)+'</div>'+
+             '</div>';
+    }).join("");
+    return;
+  }
+
+  var histKeys=["Mon","Tue","Wed","Thu","Fri","Mon2","Today"];
+  el.innerHTML = histKeys.map(function(k,i){
+    var r = rows.find(function(x){ return clean(x[0])===k; });
+    var a = r ? parseFloat(clean(r[1])) : 0;
+    return '<div class="w-day '+(i===histKeys.length-1?"today":"")+'">'+
+             '<div class="w-day-label">'+(k==="Mon2"?"Mon":k)+'</div>'+
+             '<div class="w-day-score '+scClass(a)+'">'+a+'</div>'+
+           '</div>';
+  }).join("");
+}
+
+function renderCheckInState(){
+  var done = LOG_ENTRIES.some(function(e){ return e.date === todayISO(); });
+  var btn  = document.getElementById("ci-open");
+  var note = document.getElementById("w-submitted");
+  if(!btn) return;
+  if(done){
+    btn.textContent = "Update check-in";
+    btn.classList.remove("due");
+    if(note) note.textContent = "Checked in today";
+  }else{
+    btn.textContent = "Check in";
+    btn.classList.add("due");
+    if(note) note.textContent = "Not checked in yet today";
+  }
+}
+
+
 loadPortal();
 </script>
+
+<div class="ci-overlay" id="ci-overlay" onclick="if(event.target===this)closeCheckIn()">
+  <div class="ci-sheet">
+    <div class="ci-head">
+      <div><div class="ci-title">Daily check-in</div></div>
+      <button class="ci-x" onclick="closeCheckIn()">&times;</button>
+    </div>
+    <div class="ci-sub" id="ci-for"></div>
+
+    <div class="ci-row"><div class="ci-q">Sleep quality</div><div class="ci-hint">How well did you sleep?</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="sleep_quality" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="sleep_quality" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="sleep_quality" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="sleep_quality" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="sleep_quality" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Terrible</span><span>5 · Excellent</span></div></div>
+    <div class="ci-row"><div class="ci-q">Sleep duration</div><div class="ci-hint">Roughly how long?</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="sleep_duration" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="sleep_duration" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="sleep_duration" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="sleep_duration" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="sleep_duration" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Under 5h</span><span>5 · 8h +</span></div></div>
+    <div class="ci-row"><div class="ci-q">Muscle soreness</div><div class="ci-hint">5 means no soreness at all</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="soreness" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="soreness" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="soreness" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="soreness" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="soreness" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Very sore</span><span>5 · No soreness</span></div></div>
+    <div class="ci-row"><div class="ci-q">Mood</div><div class="ci-hint">How are you feeling in yourself?</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="mood" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="mood" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="mood" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="mood" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="mood" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Very low</span><span>5 · Great</span></div></div>
+    <div class="ci-row"><div class="ci-q">Stress</div><div class="ci-hint">5 means relaxed and clear</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="stress" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="stress" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="stress" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="stress" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="stress" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Very high</span><span>5 · Relaxed</span></div></div>
+    <div class="ci-row"><div class="ci-q">Energy</div><div class="ci-hint">How much is in the tank?</div><div class="ci-opts"><button type="button" class="ci-opt" data-k="energy" data-v="1" onclick="pick(this)">1</button><button type="button" class="ci-opt" data-k="energy" data-v="2" onclick="pick(this)">2</button><button type="button" class="ci-opt" data-k="energy" data-v="3" onclick="pick(this)">3</button><button type="button" class="ci-opt" data-k="energy" data-v="4" onclick="pick(this)">4</button><button type="button" class="ci-opt" data-k="energy" data-v="5" onclick="pick(this)">5</button></div><div class="ci-ends"><span>1 · Empty</span><span>5 · Full</span></div></div>
+
+    <div class="ci-row">
+      <div class="ci-q">Treatment today?</div>
+      <div class="ci-hint">Physio, rehab or medical attention</div>
+      <div class="ci-toggle">
+        <button type="button" class="ci-opt" data-k="treatment" data-v="No"  onclick="pick(this)">No</button>
+        <button type="button" class="ci-opt" data-k="treatment" data-v="Yes" onclick="pick(this)">Yes</button>
+      </div>
+    </div>
+
+    <div class="ci-row">
+      <div class="ci-q">Anything the staff should know?</div>
+      <div class="ci-hint">Optional</div>
+      <textarea class="ci-note" id="ci-note" placeholder="Tight left calf, slept badly before the flight..."></textarea>
+    </div>
+
+    <button class="ci-submit" id="ci-submit" onclick="submitCheckIn()">Submit check-in</button>
+    <div class="ci-msg" id="ci-msg"></div>
+  </div>
+</div>
+
 </body>
 </html>
