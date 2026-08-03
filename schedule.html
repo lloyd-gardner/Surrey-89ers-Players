@@ -8,84 +8,110 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --green:#008348;--green-dark:#005c33;--green-dim:rgba(0,131,72,0.15);
+  --green:#008348;--green-dark:#005c33;--green-deep:#003d22;--green-dim:rgba(0,131,72,0.15);
   --offwhite:#FAF9F6;--offwhite-mid:rgba(250,249,246,0.6);--muted:rgba(250,249,246,0.4);
   --card:#0f1f16;--card2:#152a1c;--border:rgba(0,131,72,0.2);--border-soft:rgba(250,249,246,0.07);
-  --red:#e05555;--amber:#f59e0b;--blue:#60c8fa;--purple:#a78bfa;
+  --red:#e05555;--amber:#f59e0b;
 }
-body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min-height:100vh;
-  -webkit-font-smoothing:antialiased}
-.wrap{max-width:760px;margin:0 auto;padding:0 18px 60px}
+body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min-height:100vh;-webkit-font-smoothing:antialiased}
 
-.top{position:sticky;top:0;background:rgba(8,15,11,.94);backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--border-soft);z-index:30}
-.top-in{max-width:760px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:12px}
-.back{color:var(--muted);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;
-  padding:6px 10px;border-radius:7px;border:1px solid var(--border);transition:.15s;white-space:nowrap}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;
+  border-bottom:1px solid var(--border-soft);position:sticky;top:0;background:rgba(8,15,11,.95);
+  backdrop-filter:blur(10px);z-index:40}
+.tb-l{display:flex;align-items:center;gap:11px}
+.tb-logo{width:32px;height:32px;border-radius:50%;background:var(--green-deep);display:flex;
+  align-items:center;justify-content:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:11px;color:#fff}
+.tb-t{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;line-height:1.2}
+.tb-s{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.back{background:var(--card);border:1px solid var(--border-soft);border-radius:7px;padding:7px 13px;
+  font-size:12px;font-weight:600;color:var(--offwhite-mid);text-decoration:none;transition:.15s;white-space:nowrap}
 .back:hover{color:var(--offwhite);border-color:var(--green)}
-.top-t{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700}
-.top-s{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
 
-.hd{padding:26px 0 6px}
-.h1{font-family:"Space Grotesk",sans-serif;font-size:27px;font-weight:700}
-.h2{font-size:13px;color:var(--muted);margin-top:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 22px 60px}
+.h1{font-family:"Space Grotesk",sans-serif;font-size:26px;font-weight:700}
+.h2{font-size:12.5px;color:var(--muted);margin-top:3px}
 
-.filters{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 6px}
-.chip{background:var(--card);border:1px solid var(--border);color:var(--offwhite-mid);border-radius:7px;
-  padding:7px 13px;font-size:12px;font-weight:500;cursor:pointer;transition:.12s}
-.chip:hover{border-color:var(--green);color:var(--offwhite)}
-.chip.on{background:var(--green-dim);border-color:var(--green);color:var(--green);font-weight:600}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 12px;flex-wrap:wrap}
+.nav-grp{display:flex;align-items:center;gap:9px}
+.nav-btn{background:var(--card);border:1px solid var(--border-soft);border-radius:6px;padding:6px 12px;
+  font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:.15s;line-height:1.2}
+.nav-btn:hover{color:var(--offwhite);border-color:var(--border)}
+.month-label{font-family:"Space Grotesk",sans-serif;font-size:16px;font-weight:700;min-width:158px;text-align:center}
+.today-btn{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,131,72,0.3);
+  border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
 
-.month{margin-top:26px}
-.month-h{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:700;letter-spacing:1.4px;
-  text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border-soft);
-  margin-bottom:4px;position:sticky;top:56px;background:#080f0b;padding-top:8px}
+.cat-filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.cat-pill{font-size:9.5px;font-weight:700;padding:4px 11px;border-radius:8px;cursor:pointer;
+  letter-spacing:.5px;transition:opacity .15s;border:1px solid transparent;opacity:.45;text-transform:uppercase}
+.cat-pill.on{opacity:1}
 
-.ev{display:flex;gap:14px;padding:13px 2px;border-bottom:1px solid var(--border-soft)}
-.ev:last-child{border-bottom:0}
-.ev.today{background:linear-gradient(90deg,var(--green-dim),transparent);border-radius:8px;padding-left:10px;
-  margin-left:-10px}
-.ev.past{opacity:.42}
-.ev-date{width:46px;flex-shrink:0;text-align:center}
-.ev-dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
-.ev-dom{font-family:"Space Grotesk",sans-serif;font-size:20px;font-weight:700;line-height:1.15}
-.ev-body{flex:1;min-width:0}
-.ev-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
-.ev-title{font-size:14px;font-weight:600}
-.ev-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.wd-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
+.wd{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);
+  text-align:center;padding:6px 0}
+.month-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.md{min-height:92px;background:var(--card);border:1px solid var(--border-soft);border-radius:6px;
+  padding:5px;transition:border-color .15s;overflow:hidden}
+.md.has:hover{border-color:var(--border);cursor:pointer}
+.md.today{border-color:var(--green);background:rgba(0,131,72,0.04)}
+.md.today .md-num{color:var(--green)}
+.md.other{opacity:.28}
+.md.sel{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.md-num{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:700;color:var(--offwhite-mid);margin-bottom:3px}
+.mev{font-size:9.5px;font-weight:600;padding:3px 5px;border-radius:4px;margin-bottom:2px;
+  border:1px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
 
-.badge{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:3px 7px;
-  border-radius:4px;white-space:nowrap}
-.b-game{background:rgba(0,131,72,.22);color:#2ee089}
-.b-prac{background:rgba(96,200,250,.16);color:#8fd8fb}
-.b-trav{background:rgba(167,139,250,.16);color:#c4b1fc}
-.b-off{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
-.b-intl{background:rgba(245,158,11,.16);color:#f9c467}
-.b-other{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+.detail{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.detail-h{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;margin-bottom:10px}
+.d-ev{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.d-ev:last-child{border-bottom:0}
+.d-time{width:56px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--offwhite-mid);
+  font-variant-numeric:tabular-nums;padding-top:1px}
+.d-body{flex:1;min-width:0}
+.d-title{font-size:13.5px;font-weight:600}
+.d-meta{font-size:11.5px;color:var(--muted);display:flex;gap:11px;flex-wrap:wrap;margin-top:2px}
+.d-tag{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:2px 6px;
+  border-radius:4px;border:1px solid transparent;margin-left:8px;vertical-align:1px}
 
-.tag-next{background:var(--green);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.6px;
-  text-transform:uppercase;padding:3px 7px;border-radius:4px}
+.note{background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:26px;
+  text-align:center;color:var(--muted);font-size:13px;line-height:1.7;margin-top:20px}
+.loading{text-align:center;color:var(--muted);font-size:13px;padding:56px 0}
 
-.note{background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:24px;
-  text-align:center;color:var(--muted);font-size:13px;line-height:1.7;margin-top:22px}
-.loading{text-align:center;color:var(--muted);font-size:13px;padding:50px 0}
+@media(max-width:720px){
+  .wrap{padding:18px 12px 50px}
+  .md{min-height:62px;padding:3px}
+  .md-num{font-size:11px}
+  .mev{font-size:0;padding:0;height:5px;border-radius:3px;margin-bottom:3px}
+  .month-label{min-width:120px;font-size:14px}
+  .h1{font-size:21px}
+}
 </style>
 </head>
 <body>
 
-<div class="top"><div class="top-in">
+<div class="topbar">
+  <div class="tb-l">
+    <div class="tb-logo">89</div>
+    <div><div class="tb-t">Surrey 89ers</div><div class="tb-s" id="tb-season">Schedule</div></div>
+  </div>
   <a class="back" id="back" href="/">&larr; Back</a>
-  <div><div class="top-t">Surrey 89ers</div><div class="top-s" id="season-lab">Season Schedule</div></div>
-</div></div>
+</div>
 
 <div class="wrap">
-  <div class="hd">
-    <div class="h1">Season Schedule</div>
-    <div class="h2" id="sub">Loading…</div>
+  <div class="h1">Season Schedule</div>
+  <div class="h2" id="sub">Loading…</div>
+
+  <div class="toolbar">
+    <div class="nav-grp">
+      <button class="nav-btn" onclick="shiftMonth(-1)" aria-label="Previous month">&larr;</button>
+      <div class="month-label" id="month-label"></div>
+      <button class="nav-btn" onclick="shiftMonth(1)" aria-label="Next month">&rarr;</button>
+    </div>
+    <button class="today-btn" onclick="goToday()">Today</button>
   </div>
 
-  <div class="filters" id="filters"></div>
-  <div id="body"><div class="loading">Loading the schedule…</div></div>
+  <div class="cat-filters" id="cat-filters"></div>
+  <div id="grid"><div class="loading">Loading the schedule…</div></div>
+  <div id="detail"></div>
 </div>
 
 <script>
@@ -143,18 +169,31 @@ async function loadSchedule(){
           iAll=at("all_day"), iCat=at("category"), iTitle=at("title"),
           iNotes=at("notes"), iLoc=at("location"), iVis=at("visibility");
 
-    return rows.slice(1).map(r=>{
+    const iMulti=at("multi_day_end");
+    const out=[];
+    rows.slice(1).forEach(r=>{
       const d=schedDate(r[iDate]);
-      if(!d || !schedClean(r[iTitle])) return null;
-      if(!playerVisible(r[iVis])) return null;
-      return {
-        date:d, iso:schedISO(d),
+      if(!d || !schedClean(r[iTitle])) return;
+      if(!playerVisible(r[iVis])) return;
+      const base={
         start: iStart>=0?r[iStart]:"", end: iEnd>=0?r[iEnd]:"",
         allDay: iAll>=0 && String(r[iAll]).toUpperCase()==="TRUE",
         cat: iCat>=0?(r[iCat]||""):"", title:r[iTitle],
         notes: iNotes>=0?(r[iNotes]||""):"", loc: iLoc>=0?(r[iLoc]||""):""
       };
-    }).filter(Boolean).sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
+      /* a multi-day entry gets one copy per day it covers, so it shows
+         on every day of the trip rather than only the first */
+      const endD = iMulti>=0 ? schedDate(r[iMulti]) : null;
+      const lastD = (endD && endD>d) ? endD : d;
+      for(let c=new Date(d); c<=lastD; c.setDate(c.getDate()+1)){
+        const day=new Date(c);
+        out.push(Object.assign({}, base, {
+          date:day, iso:schedISO(day),
+          spans: lastD>d, spanStart: day.getTime()===d.getTime()
+        }));
+      }
+    });
+    return out.sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
   }catch(e){
     console.error("schedule unreadable:",e);
     return null;
@@ -180,100 +219,145 @@ const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 
-let EVENTS=[], FILTER="Upcoming";
-
-function slugFromQuery(){
-  const p=new URLSearchParams(location.search).get("p");
-  return p? p.toLowerCase().trim() : "";
+/* Same category palette the coaches' calendar uses: [background, text, border] */
+const CAT_DEF={
+  "Practice":["rgba(0,131,72,0.15)","#4ade80","rgba(0,131,72,0.3)"],
+  "Game":["rgba(224,85,85,0.15)","#ff8a8a","rgba(224,85,85,0.3)"],
+  "Travel":["rgba(251,191,36,0.12)","#fbbf24","rgba(251,191,36,0.25)"],
+  "Off Day":["rgba(250,249,246,0.05)","rgba(250,249,246,0.4)","rgba(250,249,246,0.1)"],
+  "International":["rgba(244,114,182,0.12)","#f472b6","rgba(244,114,182,0.25)"],
+  "FIBA":["rgba(96,200,250,0.12)","#60c8fa","rgba(96,200,250,0.25)"],
+  "Off Court":["rgba(52,211,153,0.12)","#34d399","rgba(52,211,153,0.25)"]
+};
+const CAT_FALLBACK=["rgba(250,249,246,0.06)","rgba(250,249,246,0.55)","rgba(250,249,246,0.12)"];
+function catDef(c){ return CAT_DEF[c] || CAT_FALLBACK; }
+function catStyle(c){
+  const d=catDef(c);
+  return `background:${d[0]};color:${d[1]};border-color:${d[2]}`;
 }
 
-function render(){
-  const body=document.getElementById("body");
-  const today=schedToday();
+let EVENTS=[], CURSOR=null, OFF=[], SEL=null;
 
-  if(EVENTS===null){
-    body.innerHTML=`<div class="note">The schedule could not be loaded right now.<br>Please try again in a moment.</div>`;
-    return;
-  }
-  if(!EVENTS.length){
-    body.innerHTML=`<div class="note">Nothing on the schedule is marked for players yet.<br>Your coaches will publish fixtures here.</div>`;
-    return;
-  }
+function monthKey(d){return d.getFullYear()+"-"+d.getMonth();}
+function shiftMonth(n){ CURSOR=new Date(CURSOR.getFullYear(),CURSOR.getMonth()+n,1); SEL=null; render(); }
+function goToday(){ const t=schedToday(); CURSOR=new Date(t.getFullYear(),t.getMonth(),1); SEL=schedISO(t); render(); }
 
-  let list=EVENTS.slice();
-  if(FILTER==="Upcoming") list=list.filter(e=>e.date>=today);
-  else if(FILTER==="Games") list=list.filter(e=>catClass(e.cat)==="game");
-  /* "All" keeps everything */
+function activeCats(){
+  return [...new Set(EVENTS.map(e=>e.cat||"Other"))].sort();
+}
+function toggleCat(c,el){
+  const i=OFF.indexOf(c);
+  if(i>=0) OFF.splice(i,1); else OFF.push(c);
+  el.classList.toggle("on");
+  render();
+}
+function shown(e){ return !OFF.includes(e.cat||"Other"); }
 
-  if(!list.length){
-    body.innerHTML=`<div class="note">Nothing to show for this filter.</div>`;
-    return;
-  }
-
-  const nextUp = EVENTS.filter(e=>e.date>=today)[0];
-  const groups={};
-  list.forEach(e=>{
-    const k=e.date.getFullYear()+"-"+e.date.getMonth();
-    (groups[k]=groups[k]||[]).push(e);
-  });
-
-  body.innerHTML=Object.keys(groups).map(k=>{
-    const [y,m]=k.split("-").map(Number);
-    const rows=groups[k].map(e=>{
-      const isToday=e.date.getTime()===today.getTime();
-      const isPast=e.date<today;
-      const isNext=nextUp && e.date.getTime()===nextUp.date.getTime() && e.title===nextUp.title;
-      const time=fmtTime(e);
-      const meta=[time, e.loc, e.notes].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
-      return `<div class="ev ${isToday?"today":""} ${isPast?"past":""}">
-        <div class="ev-date">
-          <div class="ev-dow">${DAYS[(e.date.getDay()+6)%7]}</div>
-          <div class="ev-dom">${e.date.getDate()}</div>
-        </div>
-        <div class="ev-body">
-          <div class="ev-top">
-            <span class="badge b-${catClass(e.cat)}">${e.cat||"Event"}</span>
-            <span class="ev-title">${e.title}</span>
-            ${isNext?'<span class="tag-next">Next up</span>':""}
-          </div>
-          ${meta?`<div class="ev-meta">${meta}</div>`:""}
-        </div>
-      </div>`;
-    }).join("");
-    return `<div class="month"><div class="month-h">${MONTHS[m]} ${y}</div>${rows}</div>`;
+function buildFilters(){
+  const box=document.getElementById("cat-filters");
+  box.innerHTML=activeCats().map(c=>{
+    const d=catDef(c);
+    return `<span class="cat-pill on" style="background:${d[0]};color:${d[1]};border-color:${d[2]}"
+             onclick="toggleCat('${c.replace(/'/g,"\\'")}',this)">${c}</span>`;
   }).join("");
 }
 
-function setFilter(f,el){
-  FILTER=f;
-  document.querySelectorAll("#filters .chip").forEach(c=>c.classList.remove("on"));
-  el.classList.add("on");
-  render();
-}
+function selectDay(iso){ SEL = (SEL===iso? null : iso); render(); }
 
-function buildFilters(){
-  const opts=["Upcoming","Games","All"];
-  document.getElementById("filters").innerHTML=opts.map(o=>
-    `<button class="chip ${o===FILTER?"on":""}" onclick="setFilter('${o}',this)">${o}</button>`).join("");
+function render(){
+  const grid=document.getElementById("grid");
+  const det=document.getElementById("detail");
+
+  if(EVENTS===null){
+    grid.innerHTML=`<div class="note">The schedule could not be loaded right now.<br>Please try again in a moment.</div>`;
+    det.innerHTML=""; return;
+  }
+  if(!EVENTS.length){
+    grid.innerHTML=`<div class="note">Nothing on the schedule is marked for players yet.<br>Your coaches will publish fixtures here.</div>`;
+    det.innerHTML=""; return;
+  }
+
+  const y=CURSOR.getFullYear(), m=CURSOR.getMonth();
+  document.getElementById("month-label").textContent=MONTHS[m]+" "+y;
+
+  const today=schedToday();
+  const first=new Date(y,m,1);
+  const start=weekStart(first);                 /* Monday on or before the 1st */
+  /* always whole weeks, or the grid loses a column */
+  const last=new Date(y,m+1,0);
+  const span=Math.round((last-start)/86400000)+1;
+  const weeks=Math.ceil(span/7);
+  const cells=[];
+  for(let i=0;i<weeks*7;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    cells.push(d);
+  }
+
+  const head=`<div class="wd-row">${DAYS.map(d=>`<div class="wd">${d}</div>`).join("")}</div>`;
+
+  grid.innerHTML = head + `<div class="month-wrap">` + cells.map(d=>{
+    const iso=schedISO(d);
+    const evs=EVENTS.filter(e=>e.iso===iso && shown(e));
+    const cls=[
+      "md",
+      d.getMonth()!==m ? "other" : "",
+      d.getTime()===today.getTime() ? "today" : "",
+      evs.length ? "has" : "",
+      SEL===iso ? "sel" : ""
+    ].filter(Boolean).join(" ");
+    const chips=evs.map(e=>{
+      const label=(e.allDay||!e.start) ? e.title : e.start+" "+e.title;
+      return `<div class="mev" style="${catStyle(e.cat)}" title="${e.title}">${label}</div>`;
+    }).join("");
+    const click = evs.length ? ` onclick="selectDay('${iso}')"` : "";
+    return `<div class="${cls}"${click}><div class="md-num">${d.getDate()}</div>${chips}</div>`;
+  }).join("") + `</div>`;
+
+  /* detail panel: the selected day, or the month's next fixture if nothing picked */
+  let panelDate = SEL;
+  if(!panelDate){
+    const inMonth=EVENTS.filter(e=>e.date.getFullYear()===y && e.date.getMonth()===m && shown(e));
+    const next=inMonth.find(e=>e.date>=today) || inMonth[0];
+    panelDate = next? next.iso : null;
+  }
+  if(!panelDate){ det.innerHTML=""; return; }
+
+  const evs=EVENTS.filter(e=>e.iso===panelDate && shown(e));
+  if(!evs.length){ det.innerHTML=""; return; }
+  const d=evs[0].date;
+  det.innerHTML=`<div class="detail">
+    <div class="detail-h">${DAYS[(d.getDay()+6)%7]} ${d.getDate()} ${MONTHS[d.getMonth()]}${
+      d.getTime()===today.getTime()?' <span style="color:var(--green)">· today</span>':""}</div>
+    ${evs.map(e=>{
+      const meta=[e.loc,e.notes].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+      return `<div class="d-ev">
+        <div class="d-time">${e.allDay?"All day":(e.start||"—")}</div>
+        <div class="d-body">
+          <div class="d-title">${e.title}<span class="d-tag" style="${catStyle(e.cat)}">${e.cat||"Event"}</span></div>
+          ${meta?`<div class="d-meta">${meta}</div>`:""}
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
 }
 
 (async function(){
-  const slug=slugFromQuery();
+  const p=new URLSearchParams(location.search).get("p");
   const back=document.getElementById("back");
-  if(slug){ back.href="/"+slug; back.textContent="\u2190 Back to my portal"; }
+  if(p){ back.href="/"+p.toLowerCase().trim(); back.textContent="\u2190 My portal"; }
+  document.getElementById("tb-season").textContent="Schedule · "+SEASON;
 
-  document.getElementById("season-lab").textContent="Season "+SEASON;
   EVENTS=await loadSchedule();
-
   const today=schedToday();
+  CURSOR=new Date(today.getFullYear(),today.getMonth(),1);
+
   if(EVENTS && EVENTS.length){
     const upcoming=EVENTS.filter(e=>e.date>=today).length;
-    document.getElementById("sub").textContent =
-      `${EVENTS.length} sessions and fixtures this season · ${upcoming} still to come`;
+    document.getElementById("sub").textContent=`Season ${SEASON} · ${EVENTS.length} sessions and fixtures · ${upcoming} still to come`;
+    buildFilters();
   }else{
     document.getElementById("sub").textContent="";
   }
-  buildFilters();
   render();
 })();
 </script>

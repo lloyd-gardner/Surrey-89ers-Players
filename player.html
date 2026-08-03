@@ -114,6 +114,12 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .b-intl{background:rgba(245,158,11,.16);color:#f9c467}
 .b-other{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
 
+
+.sec-link{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border-soft);
+  border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--offwhite-mid);
+  text-decoration:none;transition:.15s;white-space:nowrap}
+.sec-link:hover{color:var(--green);border-color:var(--green)}
+.sec-link svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .wk-foot{padding:12px 16px;border-top:1px solid var(--border-soft);text-align:center}
 .wk-link{display:inline-flex;align-items:center;gap:7px;color:var(--green);text-decoration:none;
   font-size:12.5px;font-weight:600}
@@ -340,11 +346,12 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
           <button class="wk-btn" id="wk-prev" onclick="shiftWeek(-1)" aria-label="Previous week">&lsaquo;</button>
           <div class="section-note" id="wk-label"></div>
           <button class="wk-btn" id="wk-next" onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
+          <a class="sec-link" id="wk-full" href="/schedule"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Season</a>
         </div>
       </div>
       <div class="wk-card">
         <div id="wk-body"></div>
-        <div class="wk-foot"><a class="wk-link" id="wk-full" href="/schedule">View the full season schedule &rarr;</a></div>
+
       </div>
     </div>
 
@@ -938,18 +945,31 @@ async function loadSchedule(){
           iAll=at("all_day"), iCat=at("category"), iTitle=at("title"),
           iNotes=at("notes"), iLoc=at("location"), iVis=at("visibility");
 
-    return rows.slice(1).map(r=>{
+    const iMulti=at("multi_day_end");
+    const out=[];
+    rows.slice(1).forEach(r=>{
       const d=schedDate(r[iDate]);
-      if(!d || !schedClean(r[iTitle])) return null;
-      if(!playerVisible(r[iVis])) return null;
-      return {
-        date:d, iso:schedISO(d),
+      if(!d || !schedClean(r[iTitle])) return;
+      if(!playerVisible(r[iVis])) return;
+      const base={
         start: iStart>=0?r[iStart]:"", end: iEnd>=0?r[iEnd]:"",
         allDay: iAll>=0 && String(r[iAll]).toUpperCase()==="TRUE",
         cat: iCat>=0?(r[iCat]||""):"", title:r[iTitle],
         notes: iNotes>=0?(r[iNotes]||""):"", loc: iLoc>=0?(r[iLoc]||""):""
       };
-    }).filter(Boolean).sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
+      /* a multi-day entry gets one copy per day it covers, so it shows
+         on every day of the trip rather than only the first */
+      const endD = iMulti>=0 ? schedDate(r[iMulti]) : null;
+      const lastD = (endD && endD>d) ? endD : d;
+      for(let c=new Date(d); c<=lastD; c.setDate(c.getDate()+1)){
+        const day=new Date(c);
+        out.push(Object.assign({}, base, {
+          date:day, iso:schedISO(day),
+          spans: lastD>d, spanStart: day.getTime()===d.getTime()
+        }));
+      }
+    });
+    return out.sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
   }catch(e){
     console.error("schedule unreadable:",e);
     return null;
