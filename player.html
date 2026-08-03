@@ -53,6 +53,17 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .player-info{padding-bottom:6px}
 .player-name{font-family:"Space Grotesk",sans-serif;font-size:28px;font-weight:700;line-height:1.1;letter-spacing:-0.5px}
+/* player cut-out on the right of the header */
+.ph-photo{margin-left:auto;align-self:flex-end;flex-shrink:0;height:158px;width:auto;display:none;
+  margin-bottom:-10px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.6));
+  /* the source shot is cropped at the shoulders, so fade the cut rather than
+     leaving a hard horizontal edge */
+  -webkit-mask-image:linear-gradient(to bottom,#000 82%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 82%,transparent 100%)}
+.ph-photo.on{display:block}
+@media(max-width:700px){.ph-photo{height:112px;margin-bottom:-8px}}
+@media(max-width:430px){.ph-photo{height:92px}}
+
 .player-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .meta-tag{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:4px}
 .mt-pos{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,131,72,0.3)}
@@ -314,6 +325,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
         <span class="meta-tag mt-status">✓ Active</span>
       </div>
     </div>
+    <img class="ph-photo" id="ph-photo" alt="">
   </div>
 
   <div class="content">
@@ -520,7 +532,7 @@ async function loadRoster(){
 
   /* Canonical column order, used as a fallback for any header cell Google
      blanks out (it does that for numeric/boolean columns). */
-  const DEFAULTS=["slug","name","number","position","tab","active"];
+  const DEFAULTS=["slug","name","number","position","tab","active","photo"];
   const head=rows[0].map(h=>h.toLowerCase().replace(/[^a-z]/g,""));
   const hasHeader=head.includes("slug");
 
@@ -538,7 +550,8 @@ async function loadRoster(){
     number  : r[col.number]||"",
     position: r[col.position]||"",
     tab     : r[col.tab]||r[col.name]||"",
-    active  : String(r[col.active]||"TRUE").toUpperCase()!=="FALSE"
+    active  : String(r[col.active]||"TRUE").toUpperCase()!=="FALSE",
+    photo   : r[col.photo]||""
   })).filter(p=>p.slug && p.slug!=="slug");
 }
 
@@ -597,6 +610,7 @@ function render(rows,player){
   document.getElementById("player-name").textContent=name;
   document.getElementById("player-pos").textContent=position+" · #"+number;
   window.PLAYER_NAME=name;
+  setPlayerPhoto(player);
   document.getElementById("cover-badge").textContent="Surrey 89ers · Pro Team · "+SEASON;
   document.getElementById("season-tag").textContent="Season "+SEASON;
 
@@ -997,6 +1011,24 @@ const MONTHS=["January","February","March","April","May","June","July","August",
 let SCHEDULE=[], WEEK_OFF=0;
 
 function shiftWeek(n){ WEEK_OFF+=n; WK_SEL=null; renderWeek(); }
+
+
+/* Player cut-outs live in this repo under /photos/<slug>.png.
+   A ROSTER "photo" column overrides that with any full URL. */
+const PHOTO_BASE="/photos/";
+function photoURL(p){
+  const custom=(p.photo||"").trim();
+  if(/^https?:\/\//i.test(custom)) return custom;
+  return PHOTO_BASE+p.slug+".png";
+}
+function setPlayerPhoto(p){
+  const el=document.getElementById("ph-photo");
+  if(!el||!p) return;
+  el.alt=p.name||"";
+  el.onload=()=>el.classList.add("on");     /* only show once it actually loads */
+  el.onerror=()=>el.classList.remove("on"); /* no photo yet: header just closes up */
+  el.src=photoURL(p);
+}
 
 /* Same category palette the coaches' calendar uses: [background, text, border] */
 const WK_CAT={
