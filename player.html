@@ -209,7 +209,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 <div id="portal" style="display:none">
   <div class="cover">
     <div class="cover-number" id="cover-number"></div>
-    <div class="cover-badge">Surrey 89ers · Pro Team · 2025-26</div>
+    <div class="cover-badge" id="cover-badge"></div>
   </div>
 
   <div class="player-header">
@@ -218,7 +218,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
       <div class="player-name" id="player-name"></div>
       <div class="player-meta">
         <span class="meta-tag mt-pos" id="player-pos"></span>
-        <span class="meta-tag mt-season">Season 2025-26</span>
+        <span class="meta-tag mt-season" id="season-tag"></span>
         <span class="meta-tag mt-status">✓ Active</span>
       </div>
     </div>
@@ -294,6 +294,8 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
    ============================================================ */
 const SHEET_ID   = "1NqYAMc7L_yzaiTlms6SpjvhhoJqg19n5XYtj7IGcJqg";
 const ROSTER_TAB = "ROSTER";
+/* Season label shown on the portal. Update once here each new season. */
+const SEASON     = "2026-27";
 
 /* Live read of any tab by NAME (not gid) so renaming/adding tabs just works.
    headers=0 stops Google guessing which row is a header and merging rows. */
@@ -475,6 +477,8 @@ function render(rows,player){
   document.getElementById("cover-number").textContent="#"+number;
   document.getElementById("player-name").textContent=name;
   document.getElementById("player-pos").textContent=position+" · #"+number;
+  document.getElementById("cover-badge").textContent="Surrey 89ers · Pro Team · "+SEASON;
+  document.getElementById("season-tag").textContent="Season "+SEASON;
 
   // WELLNESS
   const scores=[
