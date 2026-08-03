@@ -89,46 +89,44 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .sc-g{color:#4ade80}.sc-a{color:var(--amber)}.sc-r{color:var(--red)}
 .w-score-trend{font-size:10px;color:var(--muted);margin-top:3px}
 
-/* ===== THIS WEEK ===== */
-.wk-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.wk-day{display:flex;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border-soft)}
-.wk-day:last-child{border-bottom:0}
-.wk-day.today{background:linear-gradient(90deg,rgba(0,131,72,0.13),transparent)}
-.wk-day.past{opacity:.42}
-.wk-when{width:52px;flex-shrink:0}
-.wk-dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;line-height:1.5}
-.wk-dom{font-family:"Space Grotesk",sans-serif;font-size:16px;font-weight:700;line-height:1.1}
-.wk-day.today .wk-dow{color:var(--green)}
-.wk-items{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding-top:1px}
-.wk-ev-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.wk-ev-title{font-size:13.5px;font-weight:600}
-.wk-ev-meta{font-size:11.5px;color:var(--muted);display:flex;gap:11px;flex-wrap:wrap;margin-top:2px}
-.wk-rest{font-size:12px;color:var(--muted);padding-top:3px}
+/* ===== THIS WEEK — seven-column strip ===== */
+.wk-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 11px 11px}
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.wk-col{border-radius:7px;padding:7px 3px 8px;text-align:center;min-height:74px;
+  background:rgba(250,249,246,0.02);border:1px solid transparent;transition:.12s}
+.wk-col.today{border-color:var(--green);background:rgba(0,131,72,0.07)}
+.wk-col.past{opacity:.4}
+.wk-col.has{cursor:pointer}
+.wk-col.has:hover{border-color:var(--border)}
+.wk-col.sel{border-color:var(--green)}
+.wk-dow{font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.wk-col.today .wk-dow{color:var(--green)}
+.wk-num{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700;line-height:1.3;margin-bottom:5px}
+.wk-dots{display:flex;flex-direction:column;gap:3px;align-items:center}
+.wk-dot{width:22px;height:4px;border-radius:2px}
+.wk-detail{margin-top:11px;padding-top:11px;border-top:1px solid var(--border-soft)}
+.wk-dh{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.wk-ev{display:flex;gap:10px;padding:7px 0}
+.wk-ev+.wk-ev{border-top:1px solid var(--border-soft)}
+.wk-time{width:46px;flex-shrink:0;font-size:11.5px;font-weight:600;color:var(--offwhite-mid);font-variant-numeric:tabular-nums}
+.wk-body2{flex:1;min-width:0}
+.wk-title{font-size:13px;font-weight:600}
+.wk-loc{font-size:11.5px;color:var(--muted);margin-top:1px}
+.wk-none{font-size:12px;color:var(--muted);padding:3px 0}
 
 .badge{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:3px 6px;
-  border-radius:4px;white-space:nowrap}
-.b-game{background:rgba(0,131,72,.22);color:#2ee089}
-.b-prac{background:rgba(96,200,250,.16);color:#8fd8fb}
-.b-trav{background:rgba(167,139,250,.16);color:#c4b1fc}
-.b-off{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
-.b-intl{background:rgba(245,158,11,.16);color:#f9c467}
-.b-other{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+  border-radius:4px;white-space:nowrap;border:1px solid transparent}
 
+.wk-nav{display:flex;align-items:center;gap:8px}
+.wk-btn{background:none;border:1px solid var(--border);color:var(--offwhite-mid);border-radius:6px;
+  width:26px;height:24px;font-size:13px;cursor:pointer;line-height:1;transition:.12s}
+.wk-btn:hover{border-color:var(--green);color:var(--offwhite)}
 
 .sec-link{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border-soft);
   border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--offwhite-mid);
   text-decoration:none;transition:.15s;white-space:nowrap}
 .sec-link:hover{color:var(--green);border-color:var(--green)}
 .sec-link svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.wk-foot{padding:12px 16px;border-top:1px solid var(--border-soft);text-align:center}
-.wk-link{display:inline-flex;align-items:center;gap:7px;color:var(--green);text-decoration:none;
-  font-size:12.5px;font-weight:600}
-.wk-link:hover{text-decoration:underline}
-.wk-nav{display:flex;align-items:center;gap:8px}
-.wk-btn{background:none;border:1px solid var(--border);color:var(--offwhite-mid);border-radius:6px;
-  width:26px;height:24px;font-size:13px;cursor:pointer;line-height:1;transition:.12s}
-.wk-btn:hover{border-color:var(--green);color:var(--offwhite)}
-.wk-btn:disabled{opacity:.3;cursor:default}
 
 
 /* ===== DAILY CHECK-IN ===== */
@@ -998,7 +996,31 @@ const MONTHS=["January","February","March","April","May","June","July","August",
 /* ---------- THIS WEEK on the portal ---------- */
 let SCHEDULE=[], WEEK_OFF=0;
 
-function shiftWeek(n){ WEEK_OFF+=n; renderWeek(); }
+function shiftWeek(n){ WEEK_OFF+=n; WK_SEL=null; renderWeek(); }
+
+/* Same category palette the coaches' calendar uses: [background, text, border] */
+const WK_CAT={
+  "Practice":["rgba(0,131,72,0.15)","#4ade80","rgba(0,131,72,0.3)"],
+  "Game":["rgba(224,85,85,0.15)","#ff8a8a","rgba(224,85,85,0.3)"],
+  "Travel":["rgba(251,191,36,0.12)","#fbbf24","rgba(251,191,36,0.25)"],
+  "Off Day":["rgba(250,249,246,0.05)","rgba(250,249,246,0.4)","rgba(250,249,246,0.1)"],
+  "International":["rgba(244,114,182,0.12)","#f472b6","rgba(244,114,182,0.25)"],
+  "FIBA":["rgba(96,200,250,0.12)","#60c8fa","rgba(96,200,250,0.25)"]
+};
+const WK_FB=["rgba(250,249,246,0.06)","rgba(250,249,246,0.55)","rgba(250,249,246,0.12)"];
+function wkCat(c){ return WK_CAT[c] || WK_FB; }
+function wkStyle(c){ const d=wkCat(c); return "background:"+d[0]+";color:"+d[1]+";border-color:"+d[2]; }
+
+let WK_SEL=null;
+function pickDay(iso){ WK_SEL = (WK_SEL===iso? null : iso); renderWeek(); }
+
+function relWhen(d, today){
+  const n=Math.round((d-today)/86400000);
+  if(n===0) return "Today";
+  if(n===1) return "Tomorrow";
+  if(n===-1) return "Yesterday";
+  return DAYS[(d.getDay()+6)%7]+" "+d.getDate()+" "+MONTHS[d.getMonth()].slice(0,3);
+}
 
 function renderWeek(){
   const body=document.getElementById("wk-body");
@@ -1006,48 +1028,63 @@ function renderWeek(){
   if(!body) return;
 
   if(SCHEDULE===null){
-    body.innerHTML=`<div class="wk-day"><div class="wk-items"><div class="wk-rest">Schedule unavailable right now.</div></div></div>`;
-    lab.textContent=""; return;
+    body.innerHTML=`<div class="wk-none">Schedule unavailable right now.</div>`;
+    if(lab) lab.textContent=""; return;
   }
 
   const today=schedToday();
   const start=weekStart(today); start.setDate(start.getDate()+WEEK_OFF*7);
+  const end=new Date(start); end.setDate(start.getDate()+6);
 
-  lab.textContent = WEEK_OFF===0 ? "This week"
+  if(lab) lab.textContent = WEEK_OFF===0 ? "This week"
     : WEEK_OFF===1 ? "Next week"
     : WEEK_OFF===-1 ? "Last week"
     : `${start.getDate()} ${MONTHS[start.getMonth()].slice(0,3)}`;
 
-  const rows=[];
+  let cols="";
   for(let i=0;i<7;i++){
     const d=new Date(start); d.setDate(start.getDate()+i);
     const iso=schedISO(d);
     const evs=SCHEDULE.filter(e=>e.iso===iso);
-    const isToday=d.getTime()===today.getTime();
-    const isPast=d<today;
-
-    const items = evs.length
-      ? evs.map(e=>{
-          const meta=[fmtTime(e), e.loc].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
-          return `<div>
-            <div class="wk-ev-top">
-              <span class="badge b-${catClass(e.cat)}">${e.cat||"Event"}</span>
-              <span class="wk-ev-title">${e.title}</span>
-            </div>
-            ${meta?`<div class="wk-ev-meta">${meta}</div>`:""}
-          </div>`;
-        }).join("")
-      : `<div class="wk-rest">&mdash;</div>`;
-
-    rows.push(`<div class="wk-day ${isToday?"today":""} ${isPast?"past":""}">
-      <div class="wk-when">
-        <div class="wk-dow">${isToday?"Today":DAYS[i]}</div>
-        <div class="wk-dom">${d.getDate()}</div>
-      </div>
-      <div class="wk-items">${items}</div>
-    </div>`);
+    const isT=d.getTime()===today.getTime();
+    const cls=["wk-col",isT?"today":"",d<today?"past":"",evs.length?"has":"",WK_SEL===iso?"sel":""].filter(Boolean).join(" ");
+    const dots=evs.slice(0,3).map(e=>`<div class="wk-dot" style="background:${wkCat(e.cat)[1]}"></div>`).join("");
+    cols+=`<div class="${cls}" ${evs.length?`onclick="pickDay('${iso}')"`:""}>
+      <div class="wk-dow">${DAYS[i]}</div>
+      <div class="wk-num">${d.getDate()}</div>
+      <div class="wk-dots">${dots}</div>
+    </div>`;
   }
-  body.innerHTML=rows.join("");
+
+  /* default the panel to the next thing coming up inside this week */
+  let sel=WK_SEL;
+  if(!sel){
+    const inWeek=SCHEDULE.filter(e=>e.date>=start && e.date<=end);
+    const next=inWeek.find(e=>e.date>=today) || inWeek[0];
+    sel = next ? next.iso : null;
+  }
+
+  let detail="";
+  if(sel){
+    const evs=SCHEDULE.filter(e=>e.iso===sel);
+    if(evs.length){
+      const d=evs[0].date;
+      detail=`<div class="wk-detail">
+        <div class="wk-dh">${relWhen(d,today)}</div>
+        ${evs.map(e=>`<div class="wk-ev">
+          <div class="wk-time">${e.allDay?"All day":(e.start||"—")}</div>
+          <div class="wk-body2">
+            <div class="wk-title">${e.title} <span class="badge" style="${wkStyle(e.cat)}">${e.cat||"Event"}</span></div>
+            ${e.loc?`<div class="wk-loc">${e.loc}</div>`:""}
+          </div>
+        </div>`).join("")}
+      </div>`;
+    }
+  }else{
+    detail=`<div class="wk-detail"><div class="wk-none">Nothing scheduled this week.</div></div>`;
+  }
+
+  body.innerHTML=`<div class="wk-grid">${cols}</div>${detail}`;
 }
 
 loadPortal();
