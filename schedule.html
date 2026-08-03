@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surrey 89ers — Season Schedule</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#008348;--green-dark:#005c33;--green-dim:rgba(0,131,72,0.15);
+  --offwhite:#FAF9F6;--offwhite-mid:rgba(250,249,246,0.6);--muted:rgba(250,249,246,0.4);
+  --card:#0f1f16;--card2:#152a1c;--border:rgba(0,131,72,0.2);--border-soft:rgba(250,249,246,0.07);
+  --red:#e05555;--amber:#f59e0b;--blue:#60c8fa;--purple:#a78bfa;
+}
+body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min-height:100vh;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px 60px}
+
+.top{position:sticky;top:0;background:rgba(8,15,11,.94);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border-soft);z-index:30}
+.top-in{max-width:760px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.back{color:var(--muted);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:7px;border:1px solid var(--border);transition:.15s;white-space:nowrap}
+.back:hover{color:var(--offwhite);border-color:var(--green)}
+.top-t{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:700}
+.top-s{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+
+.hd{padding:26px 0 6px}
+.h1{font-family:"Space Grotesk",sans-serif;font-size:27px;font-weight:700}
+.h2{font-size:13px;color:var(--muted);margin-top:4px}
+
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0 6px}
+.chip{background:var(--card);border:1px solid var(--border);color:var(--offwhite-mid);border-radius:7px;
+  padding:7px 13px;font-size:12px;font-weight:500;cursor:pointer;transition:.12s}
+.chip:hover{border-color:var(--green);color:var(--offwhite)}
+.chip.on{background:var(--green-dim);border-color:var(--green);color:var(--green);font-weight:600}
+
+.month{margin-top:26px}
+.month-h{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:700;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border-soft);
+  margin-bottom:4px;position:sticky;top:56px;background:#080f0b;padding-top:8px}
+
+.ev{display:flex;gap:14px;padding:13px 2px;border-bottom:1px solid var(--border-soft)}
+.ev:last-child{border-bottom:0}
+.ev.today{background:linear-gradient(90deg,var(--green-dim),transparent);border-radius:8px;padding-left:10px;
+  margin-left:-10px}
+.ev.past{opacity:.42}
+.ev-date{width:46px;flex-shrink:0;text-align:center}
+.ev-dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.ev-dom{font-family:"Space Grotesk",sans-serif;font-size:20px;font-weight:700;line-height:1.15}
+.ev-body{flex:1;min-width:0}
+.ev-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.ev-title{font-size:14px;font-weight:600}
+.ev-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+
+.badge{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:3px 7px;
+  border-radius:4px;white-space:nowrap}
+.b-game{background:rgba(0,131,72,.22);color:#2ee089}
+.b-prac{background:rgba(96,200,250,.16);color:#8fd8fb}
+.b-trav{background:rgba(167,139,250,.16);color:#c4b1fc}
+.b-off{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+.b-intl{background:rgba(245,158,11,.16);color:#f9c467}
+.b-other{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+
+.tag-next{background:var(--green);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;padding:3px 7px;border-radius:4px}
+
+.note{background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:24px;
+  text-align:center;color:var(--muted);font-size:13px;line-height:1.7;margin-top:22px}
+.loading{text-align:center;color:var(--muted);font-size:13px;padding:50px 0}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <a class="back" id="back" href="/">&larr; Back</a>
+  <div><div class="top-t">Surrey 89ers</div><div class="top-s" id="season-lab">Season Schedule</div></div>
+</div></div>
+
+<div class="wrap">
+  <div class="hd">
+    <div class="h1">Season Schedule</div>
+    <div class="h2" id="sub">Loading…</div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div id="body"><div class="loading">Loading the schedule…</div></div>
+</div>
+
+<script>
+const SEASON="2026-27";
+/* ============================================================
+   SHARED SCHEDULE READER
+   Reads the master schedule and keeps only what players may see.
+   The rule: visibility must say "Both" or "Players". Anything else
+   — "Coaches Only", or blank — stays out. Blank is treated as
+   hidden on purpose: a forgotten tag should fail closed, not leak.
+   ============================================================ */
+const SCHEDULE_CSV="https://docs.google.com/spreadsheets/d/e/2PACX-1vTxFit7jrGqaHcbBTuK15aBvfn4AVsd5MWK4tMLgDyoQdCJSHvQM7F4cRFK-3w91n65RlfMlNISYFD8/pub?gid=0&single=true&output=csv";
+
+function schedClean(s){return(s||"").replace(/^"|"$/g,"").replace(/\r/g,"").trim();}
+function schedParseCSV(text){
+  return text.replace(/\r/g,"").trim().split("\n").map(line=>{
+    const c=[];let cur="",q=false;
+    for(const ch of line){
+      if(ch==='"')q=!q;
+      else if(ch===","&&!q){c.push(schedClean(cur));cur="";}
+      else cur+=ch;
+    }
+    c.push(schedClean(cur));return c;
+  });
+}
+/* dates in the sheet are dd/mm/yyyy */
+function schedDate(s){
+  const p=String(s).split("/");
+  if(p.length!==3) return null;
+  const d=new Date(+p[2],+p[1]-1,+p[0]);
+  return isNaN(d.getTime())?null:d;
+}
+function schedISO(d){const z=n=>(n<10?"0":"")+n;return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
+function schedToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
+
+/* Monday-start week containing `d` */
+function weekStart(d){
+  const x=new Date(d); x.setHours(0,0,0,0);
+  const day=(x.getDay()+6)%7;          /* Mon=0 … Sun=6 */
+  x.setDate(x.getDate()-day); return x;
+}
+
+function playerVisible(v){ return /^(both|players)$/i.test(v||""); }
+
+async function loadSchedule(){
+  try{
+    const res=await fetch(SCHEDULE_CSV+"&cachebust="+Date.now());
+    if(!res.ok) throw new Error("schedule http "+res.status);
+    const rows=schedParseCSV(await res.text());
+    if(rows.length<2) return [];
+    const head=rows[0].map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
+    const at=n=>head.indexOf(n);
+    /* header names keep their underscores after cleaning, so match them exactly */
+    const iDate=at("date"), iStart=at("start_time"), iEnd=at("end_time"),
+          iAll=at("all_day"), iCat=at("category"), iTitle=at("title"),
+          iNotes=at("notes"), iLoc=at("location"), iVis=at("visibility");
+
+    return rows.slice(1).map(r=>{
+      const d=schedDate(r[iDate]);
+      if(!d || !schedClean(r[iTitle])) return null;
+      if(!playerVisible(r[iVis])) return null;
+      return {
+        date:d, iso:schedISO(d),
+        start: iStart>=0?r[iStart]:"", end: iEnd>=0?r[iEnd]:"",
+        allDay: iAll>=0 && String(r[iAll]).toUpperCase()==="TRUE",
+        cat: iCat>=0?(r[iCat]||""):"", title:r[iTitle],
+        notes: iNotes>=0?(r[iNotes]||""):"", loc: iLoc>=0?(r[iLoc]||""):""
+      };
+    }).filter(Boolean).sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
+  }catch(e){
+    console.error("schedule unreadable:",e);
+    return null;
+  }
+}
+
+/* category -> a css class suffix; every badge also carries its text */
+function catClass(c){
+  const k=(c||"").toLowerCase();
+  if(k.includes("game"))return "game";
+  if(k.includes("practice"))return "prac";
+  if(k.includes("travel"))return "trav";
+  if(k.includes("off"))return "off";
+  if(k.includes("fiba")||k.includes("international"))return "intl";
+  return "other";
+}
+function fmtTime(ev){
+  if(ev.allDay) return "All day";
+  if(!ev.start) return "";
+  return ev.end ? ev.start : ev.start;
+}
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+
+let EVENTS=[], FILTER="Upcoming";
+
+function slugFromQuery(){
+  const p=new URLSearchParams(location.search).get("p");
+  return p? p.toLowerCase().trim() : "";
+}
+
+function render(){
+  const body=document.getElementById("body");
+  const today=schedToday();
+
+  if(EVENTS===null){
+    body.innerHTML=`<div class="note">The schedule could not be loaded right now.<br>Please try again in a moment.</div>`;
+    return;
+  }
+  if(!EVENTS.length){
+    body.innerHTML=`<div class="note">Nothing on the schedule is marked for players yet.<br>Your coaches will publish fixtures here.</div>`;
+    return;
+  }
+
+  let list=EVENTS.slice();
+  if(FILTER==="Upcoming") list=list.filter(e=>e.date>=today);
+  else if(FILTER==="Games") list=list.filter(e=>catClass(e.cat)==="game");
+  /* "All" keeps everything */
+
+  if(!list.length){
+    body.innerHTML=`<div class="note">Nothing to show for this filter.</div>`;
+    return;
+  }
+
+  const nextUp = EVENTS.filter(e=>e.date>=today)[0];
+  const groups={};
+  list.forEach(e=>{
+    const k=e.date.getFullYear()+"-"+e.date.getMonth();
+    (groups[k]=groups[k]||[]).push(e);
+  });
+
+  body.innerHTML=Object.keys(groups).map(k=>{
+    const [y,m]=k.split("-").map(Number);
+    const rows=groups[k].map(e=>{
+      const isToday=e.date.getTime()===today.getTime();
+      const isPast=e.date<today;
+      const isNext=nextUp && e.date.getTime()===nextUp.date.getTime() && e.title===nextUp.title;
+      const time=fmtTime(e);
+      const meta=[time, e.loc, e.notes].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+      return `<div class="ev ${isToday?"today":""} ${isPast?"past":""}">
+        <div class="ev-date">
+          <div class="ev-dow">${DAYS[(e.date.getDay()+6)%7]}</div>
+          <div class="ev-dom">${e.date.getDate()}</div>
+        </div>
+        <div class="ev-body">
+          <div class="ev-top">
+            <span class="badge b-${catClass(e.cat)}">${e.cat||"Event"}</span>
+            <span class="ev-title">${e.title}</span>
+            ${isNext?'<span class="tag-next">Next up</span>':""}
+          </div>
+          ${meta?`<div class="ev-meta">${meta}</div>`:""}
+        </div>
+      </div>`;
+    }).join("");
+    return `<div class="month"><div class="month-h">${MONTHS[m]} ${y}</div>${rows}</div>`;
+  }).join("");
+}
+
+function setFilter(f,el){
+  FILTER=f;
+  document.querySelectorAll("#filters .chip").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
+  render();
+}
+
+function buildFilters(){
+  const opts=["Upcoming","Games","All"];
+  document.getElementById("filters").innerHTML=opts.map(o=>
+    `<button class="chip ${o===FILTER?"on":""}" onclick="setFilter('${o}',this)">${o}</button>`).join("");
+}
+
+(async function(){
+  const slug=slugFromQuery();
+  const back=document.getElementById("back");
+  if(slug){ back.href="/"+slug; back.textContent="\u2190 Back to my portal"; }
+
+  document.getElementById("season-lab").textContent="Season "+SEASON;
+  EVENTS=await loadSchedule();
+
+  const today=schedToday();
+  if(EVENTS && EVENTS.length){
+    const upcoming=EVENTS.filter(e=>e.date>=today).length;
+    document.getElementById("sub").textContent =
+      `${EVENTS.length} sessions and fixtures this season · ${upcoming} still to come`;
+  }else{
+    document.getElementById("sub").textContent="";
+  }
+  buildFilters();
+  render();
+})();
+</script>
+</body>
+</html>

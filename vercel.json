@@ -1,11 +1,18 @@
 {
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/schedule", "destination": "/schedule.html" },
     { "source": "/:slug", "destination": "/player.html" }
   ],
   "headers": [
     {
       "source": "/player.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/schedule.html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]

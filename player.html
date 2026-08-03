@@ -89,6 +89,42 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .sc-g{color:#4ade80}.sc-a{color:var(--amber)}.sc-r{color:var(--red)}
 .w-score-trend{font-size:10px;color:var(--muted);margin-top:3px}
 
+/* ===== THIS WEEK ===== */
+.wk-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.wk-day{display:flex;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border-soft)}
+.wk-day:last-child{border-bottom:0}
+.wk-day.today{background:linear-gradient(90deg,rgba(0,131,72,0.13),transparent)}
+.wk-day.past{opacity:.42}
+.wk-when{width:52px;flex-shrink:0}
+.wk-dow{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;line-height:1.5}
+.wk-dom{font-family:"Space Grotesk",sans-serif;font-size:16px;font-weight:700;line-height:1.1}
+.wk-day.today .wk-dow{color:var(--green)}
+.wk-items{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding-top:1px}
+.wk-ev-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.wk-ev-title{font-size:13.5px;font-weight:600}
+.wk-ev-meta{font-size:11.5px;color:var(--muted);display:flex;gap:11px;flex-wrap:wrap;margin-top:2px}
+.wk-rest{font-size:12px;color:var(--muted);padding-top:3px}
+
+.badge{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:3px 6px;
+  border-radius:4px;white-space:nowrap}
+.b-game{background:rgba(0,131,72,.22);color:#2ee089}
+.b-prac{background:rgba(96,200,250,.16);color:#8fd8fb}
+.b-trav{background:rgba(167,139,250,.16);color:#c4b1fc}
+.b-off{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+.b-intl{background:rgba(245,158,11,.16);color:#f9c467}
+.b-other{background:rgba(250,249,246,.08);color:var(--offwhite-mid)}
+
+.wk-foot{padding:12px 16px;border-top:1px solid var(--border-soft);text-align:center}
+.wk-link{display:inline-flex;align-items:center;gap:7px;color:var(--green);text-decoration:none;
+  font-size:12.5px;font-weight:600}
+.wk-link:hover{text-decoration:underline}
+.wk-nav{display:flex;align-items:center;gap:8px}
+.wk-btn{background:none;border:1px solid var(--border);color:var(--offwhite-mid);border-radius:6px;
+  width:26px;height:24px;font-size:13px;cursor:pointer;line-height:1;transition:.12s}
+.wk-btn:hover{border-color:var(--green);color:var(--offwhite)}
+.wk-btn:disabled{opacity:.3;cursor:default}
+
+
 /* ===== DAILY CHECK-IN ===== */
 .ci-open{background:var(--green);color:#fff;border:0;border-radius:8px;padding:9px 16px;
   font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;letter-spacing:.5px;
@@ -293,6 +329,22 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
           <div class="w-history-label">7-Day Trend</div>
           <div class="w-history-row" id="w-history"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- THIS WEEK -->
+    <div class="section" id="week-section">
+      <div class="section-header">
+        <div class="section-title">This Week</div>
+        <div class="wk-nav">
+          <button class="wk-btn" id="wk-prev" onclick="shiftWeek(-1)" aria-label="Previous week">&lsaquo;</button>
+          <div class="section-note" id="wk-label"></div>
+          <button class="wk-btn" id="wk-next" onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
+        </div>
+      </div>
+      <div class="wk-card">
+        <div id="wk-body"></div>
+        <div class="wk-foot"><a class="wk-link" id="wk-full" href="/schedule">View the full season schedule &rarr;</a></div>
       </div>
     </div>
 
@@ -513,10 +565,12 @@ async function loadPortal(){
   }
 
   try{
-    const [res, logEntries] = await Promise.all([
+    const [res, logEntries, sched] = await Promise.all([
       fetch(tabURL(player.tab)),
-      loadWellnessLog(slug)
+      loadWellnessLog(slug),
+      loadSchedule()
     ]);
+    SCHEDULE = sched;
     if(!res.ok)throw new Error("fetch failed");
     LOG_ENTRIES = logEntries;
     const rows=parseCSV(await res.text());
@@ -569,6 +623,9 @@ function render(rows,player){
 
   renderHistory(rows);
   renderCheckInState();
+  renderWeek();
+  const full=document.getElementById("wk-full");
+  if(full) full.href="/schedule?p="+encodeURIComponent(currentSlug());
 
   // FOCUS
   const focusRows=rows.filter(r=>clean(r[0])!=""&&clean(r[1])!=""&&["TRUE","FALSE"].includes(clean(r[2])));
@@ -826,6 +883,152 @@ function renderCheckInState(){
   }
 }
 
+
+
+/* ============================================================
+   SHARED SCHEDULE READER
+   Reads the master schedule and keeps only what players may see.
+   The rule: visibility must say "Both" or "Players". Anything else
+   — "Coaches Only", or blank — stays out. Blank is treated as
+   hidden on purpose: a forgotten tag should fail closed, not leak.
+   ============================================================ */
+const SCHEDULE_CSV="https://docs.google.com/spreadsheets/d/e/2PACX-1vTxFit7jrGqaHcbBTuK15aBvfn4AVsd5MWK4tMLgDyoQdCJSHvQM7F4cRFK-3w91n65RlfMlNISYFD8/pub?gid=0&single=true&output=csv";
+
+function schedClean(s){return(s||"").replace(/^"|"$/g,"").replace(/\r/g,"").trim();}
+function schedParseCSV(text){
+  return text.replace(/\r/g,"").trim().split("\n").map(line=>{
+    const c=[];let cur="",q=false;
+    for(const ch of line){
+      if(ch==='"')q=!q;
+      else if(ch===","&&!q){c.push(schedClean(cur));cur="";}
+      else cur+=ch;
+    }
+    c.push(schedClean(cur));return c;
+  });
+}
+/* dates in the sheet are dd/mm/yyyy */
+function schedDate(s){
+  const p=String(s).split("/");
+  if(p.length!==3) return null;
+  const d=new Date(+p[2],+p[1]-1,+p[0]);
+  return isNaN(d.getTime())?null:d;
+}
+function schedISO(d){const z=n=>(n<10?"0":"")+n;return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());}
+function schedToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
+
+/* Monday-start week containing `d` */
+function weekStart(d){
+  const x=new Date(d); x.setHours(0,0,0,0);
+  const day=(x.getDay()+6)%7;          /* Mon=0 … Sun=6 */
+  x.setDate(x.getDate()-day); return x;
+}
+
+function playerVisible(v){ return /^(both|players)$/i.test(v||""); }
+
+async function loadSchedule(){
+  try{
+    const res=await fetch(SCHEDULE_CSV+"&cachebust="+Date.now());
+    if(!res.ok) throw new Error("schedule http "+res.status);
+    const rows=schedParseCSV(await res.text());
+    if(rows.length<2) return [];
+    const head=rows[0].map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
+    const at=n=>head.indexOf(n);
+    /* header names keep their underscores after cleaning, so match them exactly */
+    const iDate=at("date"), iStart=at("start_time"), iEnd=at("end_time"),
+          iAll=at("all_day"), iCat=at("category"), iTitle=at("title"),
+          iNotes=at("notes"), iLoc=at("location"), iVis=at("visibility");
+
+    return rows.slice(1).map(r=>{
+      const d=schedDate(r[iDate]);
+      if(!d || !schedClean(r[iTitle])) return null;
+      if(!playerVisible(r[iVis])) return null;
+      return {
+        date:d, iso:schedISO(d),
+        start: iStart>=0?r[iStart]:"", end: iEnd>=0?r[iEnd]:"",
+        allDay: iAll>=0 && String(r[iAll]).toUpperCase()==="TRUE",
+        cat: iCat>=0?(r[iCat]||""):"", title:r[iTitle],
+        notes: iNotes>=0?(r[iNotes]||""):"", loc: iLoc>=0?(r[iLoc]||""):""
+      };
+    }).filter(Boolean).sort((a,b)=>a.date-b.date || String(a.start).localeCompare(String(b.start)));
+  }catch(e){
+    console.error("schedule unreadable:",e);
+    return null;
+  }
+}
+
+/* category -> a css class suffix; every badge also carries its text */
+function catClass(c){
+  const k=(c||"").toLowerCase();
+  if(k.includes("game"))return "game";
+  if(k.includes("practice"))return "prac";
+  if(k.includes("travel"))return "trav";
+  if(k.includes("off"))return "off";
+  if(k.includes("fiba")||k.includes("international"))return "intl";
+  return "other";
+}
+function fmtTime(ev){
+  if(ev.allDay) return "All day";
+  if(!ev.start) return "";
+  return ev.end ? ev.start : ev.start;
+}
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+
+/* ---------- THIS WEEK on the portal ---------- */
+let SCHEDULE=[], WEEK_OFF=0;
+
+function shiftWeek(n){ WEEK_OFF+=n; renderWeek(); }
+
+function renderWeek(){
+  const body=document.getElementById("wk-body");
+  const lab=document.getElementById("wk-label");
+  if(!body) return;
+
+  if(SCHEDULE===null){
+    body.innerHTML=`<div class="wk-day"><div class="wk-items"><div class="wk-rest">Schedule unavailable right now.</div></div></div>`;
+    lab.textContent=""; return;
+  }
+
+  const today=schedToday();
+  const start=weekStart(today); start.setDate(start.getDate()+WEEK_OFF*7);
+
+  lab.textContent = WEEK_OFF===0 ? "This week"
+    : WEEK_OFF===1 ? "Next week"
+    : WEEK_OFF===-1 ? "Last week"
+    : `${start.getDate()} ${MONTHS[start.getMonth()].slice(0,3)}`;
+
+  const rows=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    const iso=schedISO(d);
+    const evs=SCHEDULE.filter(e=>e.iso===iso);
+    const isToday=d.getTime()===today.getTime();
+    const isPast=d<today;
+
+    const items = evs.length
+      ? evs.map(e=>{
+          const meta=[fmtTime(e), e.loc].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+          return `<div>
+            <div class="wk-ev-top">
+              <span class="badge b-${catClass(e.cat)}">${e.cat||"Event"}</span>
+              <span class="wk-ev-title">${e.title}</span>
+            </div>
+            ${meta?`<div class="wk-ev-meta">${meta}</div>`:""}
+          </div>`;
+        }).join("")
+      : `<div class="wk-rest">&mdash;</div>`;
+
+    rows.push(`<div class="wk-day ${isToday?"today":""} ${isPast?"past":""}">
+      <div class="wk-when">
+        <div class="wk-dow">${isToday?"Today":DAYS[i]}</div>
+        <div class="wk-dom">${d.getDate()}</div>
+      </div>
+      <div class="wk-items">${items}</div>
+    </div>`);
+  }
+  body.innerHTML=rows.join("");
+}
 
 loadPortal();
 </script>
