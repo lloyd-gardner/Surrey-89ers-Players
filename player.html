@@ -70,6 +70,14 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .mt-season{background:rgba(250,249,246,0.07);color:var(--muted);border:1px solid var(--border-soft)}
 .mt-status{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
 
+/* TABS — Home / Basketball Development / Strength & Conditioning */
+.tab-bar{display:flex;gap:6px;max-width:980px;margin:18px auto 0;padding:0 32px;position:sticky;top:0;
+  background:#080f0b;z-index:5;padding-top:10px;border-bottom:1px solid var(--border-soft)}
+.tab-btn{background:none;border:0;color:var(--muted);font-size:12.5px;font-weight:600;padding:10px 4px 12px;
+  margin-right:16px;cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:"Inter",sans-serif}
+.tab-btn:hover{color:var(--offwhite-mid)}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
 /* CONTENT */
 .content{max-width:980px;margin:0 auto;padding:28px 32px 80px}
 .section{margin-top:28px}
@@ -97,8 +105,26 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .w-score-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .w-score-val{font-family:"Space Grotesk",sans-serif;font-size:28px;font-weight:700;line-height:1}
 .w-score-max{font-size:12px;font-weight:400;color:var(--muted);margin-left:1px}
-.sc-g{color:#4ade80}.sc-a{color:var(--amber)}.sc-r{color:var(--red)}
+.sc-g{color:#4ade80}.sc-a{color:var(--amber)}.sc-r{color:var(--red)}.sc-mut{color:var(--muted)}
 .w-score-trend{font-size:10px;color:var(--muted);margin-top:3px}
+.dot-gray{background:var(--muted)}
+
+/* LOAD MONITOR — same card shell as Daily Wellness, ACWR instead of 1-5 scores */
+.load-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.load-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border-soft)}
+.load-empty{padding:22px 18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6}
+
+/* PRACTICE VIDEOS LINK CARD (Basketball Development tab) */
+.practice-video-link{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:16px 18px;text-decoration:none;color:inherit;transition:border-color .15s}
+.practice-video-link:hover{border-color:var(--green)}
+.pvl-icon{width:44px;height:44px;border-radius:10px;background:var(--green-dim);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0}
+.pvl-info{flex:1;min-width:0}
+.pvl-title{font-size:13.5px;font-weight:700}
+.pvl-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pvl-arrow{font-size:16px;color:var(--green);opacity:.7}
+.practice-video-link:hover .pvl-arrow{opacity:1}
 
 /* ===== THIS WEEK — seven-column strip ===== */
 .wk-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 11px 11px}
@@ -342,75 +368,108 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
     <img class="ph-photo" id="ph-photo" alt="">
   </div>
 
+  <div class="tab-bar" id="tab-bar">
+    <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">Home</button>
+    <button class="tab-btn" data-tab="dev" onclick="switchTab('dev')">Basketball Development</button>
+    <button class="tab-btn" data-tab="strength" onclick="switchTab('strength')">Strength &amp; Conditioning</button>
+  </div>
+
   <div class="content">
-    <!-- WELLNESS -->
-    <div class="section">
-      <div class="section-header"><div class="section-title">Daily Wellness</div><div class="section-note" id="w-submitted"></div><button class="ci-open" id="ci-open" onclick="openCheckIn()">Check in</button></div>
-      <div class="wellness-card">
-        <div class="wellness-top">
-          <div>
-            <div class="w-date" id="w-date"></div>
-            <div class="w-status"><div class="w-dot" id="w-dot"></div><div class="w-status-text" id="w-status-text"></div></div>
+    <div class="tab-panel" id="tab-home">
+      <!-- WELLNESS -->
+      <div class="section">
+        <div class="section-header"><div class="section-title">Daily Wellness</div><div class="section-note" id="w-submitted"></div><button class="ci-open" id="ci-open" onclick="openCheckIn()">Check in</button></div>
+        <div class="wellness-card">
+          <div class="wellness-top">
+            <div>
+              <div class="w-date" id="w-date"></div>
+              <div class="w-status"><div class="w-dot" id="w-dot"></div><div class="w-status-text" id="w-status-text"></div></div>
+            </div>
+            <div class="w-trt" id="w-trt" style="display:none">⚕ Treatment Today</div>
           </div>
-          <div class="w-trt" id="w-trt" style="display:none">⚕ Treatment Today</div>
-        </div>
-        <div class="w-scores" id="w-scores"></div>
-        <div class="w-history">
-          <div class="w-history-label">7-Day Trend</div>
-          <div class="w-history-row" id="w-history"></div>
+          <div class="w-scores" id="w-scores"></div>
+          <div class="w-history">
+            <div class="w-history-label">7-Day Trend</div>
+            <div class="w-history-row" id="w-history"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- THIS WEEK -->
-    <div class="section" id="week-section">
-      <div class="section-header">
-        <div class="section-title">This Week</div>
+      <!-- LOAD MONITOR -->
+      <div class="section" id="load-section">
+        <div class="section-header"><div class="section-title">Load Monitor</div></div>
+        <div class="load-card" id="load-card">
+          <div class="load-empty">Loading…</div>
+        </div>
+      </div>
+
+      <!-- THIS WEEK -->
+      <div class="section" id="week-section">
+        <div class="section-header">
+          <div class="section-title">This Week</div>
 <div class="wk-nav">
-          <button class="wk-btn" id="wk-prev" onclick="shiftWeek(-1)" aria-label="Previous week">&lsaquo;</button>
-          <div class="section-note" id="wk-label"></div>
-          <button class="wk-btn" id="wk-next" onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
-          <a class="sec-link" id="wk-full" href="/schedule"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Season</a>
-          <a class="sec-link" href="webcal://script.google.com/macros/s/AKfycbx-xVqT4EUY_ygD-AvzmfXE4EMcya1qlrsFtnKY7WzMaDTj-w9dwrH2Pbuvjbd6Mu0cKA/exec?feed=players">📅 Subscribe</a>
-        </div>
-      </div>
-      <div class="wk-card">
-        <div id="wk-body"></div>
-
-      </div>
-    </div>
-
-    <!-- DEVELOPMENT FOCUS -->
-    <div class="section">
-      <div class="section-header"><div class="section-title">Development Focus</div></div>
-      <div class="focus-grid" id="focus-grid"></div>
-    </div>
-
-    <!-- VIDEO -->
-    <div class="section">
-      <div class="section-header"><div class="section-title">Video Feedback</div></div>
-      <div class="video-list" id="video-list"></div>
-    </div>
-
-    <!-- STRENGTH -->
-    <div class="section">
-      <div class="section-header"><div class="section-title">Strength Programme</div></div>
-      <div class="strength-card">
-        <div class="strength-header">
-          <div>
-            <div class="strength-title" id="strength-block"></div>
-            <div class="strength-dates" id="strength-dates"></div>
+            <button class="wk-btn" id="wk-prev" onclick="shiftWeek(-1)" aria-label="Previous week">&lsaquo;</button>
+            <div class="section-note" id="wk-label"></div>
+            <button class="wk-btn" id="wk-next" onclick="shiftWeek(1)" aria-label="Next week">&rsaquo;</button>
+            <a class="sec-link" id="wk-full" href="/schedule"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>Season</a>
+            <a class="sec-link" href="webcal://script.google.com/macros/s/AKfycbx-xVqT4EUY_ygD-AvzmfXE4EMcya1qlrsFtnKY7WzMaDTj-w9dwrH2Pbuvjbd6Mu0cKA/exec?feed=players">📅 Subscribe</a>
           </div>
-          <div class="strength-phase" id="strength-phase"></div>
         </div>
-        <div class="strength-days" id="strength-days"></div>
+        <div class="wk-card">
+          <div id="wk-body"></div>
+
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="section">
+        <div class="section-header"><div class="section-title">Coach Notes</div></div>
+        <div class="notes-card" id="notes-card"></div>
       </div>
     </div>
 
-    <!-- NOTES -->
-    <div class="section">
-      <div class="section-header"><div class="section-title">Coach Notes</div></div>
-      <div class="notes-card" id="notes-card"></div>
+    <div class="tab-panel" id="tab-dev" style="display:none">
+      <!-- DEVELOPMENT FOCUS -->
+      <div class="section" style="margin-top:0">
+        <div class="section-header"><div class="section-title">Development Focus</div></div>
+        <div class="focus-grid" id="focus-grid"></div>
+      </div>
+
+      <!-- VIDEO -->
+      <div class="section">
+        <div class="section-header"><div class="section-title">Video Feedback</div></div>
+        <div class="video-list" id="video-list"></div>
+      </div>
+
+      <!-- PRACTICE VIDEOS -->
+      <div class="section">
+        <div class="section-header"><div class="section-title">Practice Videos</div></div>
+        <a class="practice-video-link" id="practice-video-link" href="/practice-videos">
+          <div class="pvl-icon">🎬</div>
+          <div class="pvl-info">
+            <div class="pvl-title">Full practice session films</div>
+            <div class="pvl-sub">Synergy footage from team practices — updates automatically when your coaches add a new one.</div>
+          </div>
+          <div class="pvl-arrow">→</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-strength" style="display:none">
+      <!-- STRENGTH -->
+      <div class="section" style="margin-top:0">
+        <div class="section-header"><div class="section-title">Strength Programme</div></div>
+        <div class="strength-card">
+          <div class="strength-header">
+            <div>
+              <div class="strength-title" id="strength-block"></div>
+              <div class="strength-dates" id="strength-dates"></div>
+            </div>
+            <div class="strength-phase" id="strength-phase"></div>
+          </div>
+          <div class="strength-days" id="strength-days"></div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="footer">Surrey 89ers Basketball · Confidential · For player use only</div>
@@ -471,6 +530,19 @@ function currentSlug(){
   const q = new URLSearchParams(location.search).get("p");
   if(q) return q.toLowerCase().trim();
   return location.pathname.replace(/^\/+/,"").replace(/\.html?$/i,"").toLowerCase().trim();
+}
+
+/* ============================================================
+   TABS — Home / Basketball Development / Strength & Conditioning.
+   Purely a display switch; every tab's data still loads up front
+   in loadPortal() so switching tabs never re-fetches anything.
+   ============================================================ */
+function switchTab(tab){
+  ["home","dev","strength"].forEach(function(t){
+    document.getElementById("tab-"+t).style.display = (t===tab?"block":"none");
+    document.querySelector('.tab-btn[data-tab="'+t+'"]').classList.toggle("active", t===tab);
+  });
+  window.scrollTo({top:0,behavior:"instant"});
 }
 
 function showError(msg){
@@ -618,12 +690,16 @@ async function loadPortal(){
     return;
   }
 
+  const practiceLink = document.getElementById("practice-video-link");
+  if(practiceLink) practiceLink.href = "/practice-videos?p="+encodeURIComponent(slug);
+
   try{
-    const [res, logEntries, sched, strength] = await Promise.all([
+    const [res, logEntries, sched, strength, loadEntries] = await Promise.all([
       fetch(tabURL(player.tab)),
       loadWellnessLog(slug),
       loadSchedule(),
-      loadStrengthData(slug, player.name)
+      loadStrengthData(slug, player.name),
+      loadLoadLog(slug)
     ]);
     SCHEDULE = sched;
     if(!res.ok)throw new Error("fetch failed");
@@ -631,6 +707,7 @@ async function loadPortal(){
     const rows=parseCSV(await res.text());
     render(rows,player);
     renderStrength(strength, slug, player.name);
+    renderLoad(loadEntries);
   }catch(e){
     console.error("player tab fetch failed:",player.tab,e);
     showError("Could not load data for "+player.name+". Check that a tab named \u201c"+player.tab+"\u201d exists in the Google Sheet.");
@@ -855,6 +932,136 @@ async function loadWellnessLog(slug){
     console.error("wellness log not readable yet (normal before the first check-in):", e);
     return [];
   }
+}
+
+/* ============================================================
+   LOAD MONITOR — reads LOAD LOG (this same sheet), written by
+   coaches from the Training Load page in the coaches hub. Read
+   only here: players see their own ACWR trend, but RPE is always
+   entered by a coach for the whole squad in one go, not by the
+   player themselves.
+
+   Same session-RPE / EWMA maths as the coaches hub's load.html —
+   see that file, or the Coaches Hub project doc, for the derivation.
+   ============================================================ */
+
+const LOAD_TAB = "LOAD LOG";
+const LOAD_COLS = ["timestamp","date","time","session_type","slug","name",
+                   "duration_min","rpe","load_au","note"];
+const LOAD_ACUTE_ALPHA = 2/(7+1), LOAD_CHRONIC_ALPHA = 2/(28+1);
+const LOAD_BAND_LOW = 0.8, LOAD_BAND_HIGH = 1.3;
+
+async function loadLoadLog(slug){
+  try{
+    const res = await fetch(tabURL(LOAD_TAB));
+    if(!res.ok) return [];
+    const rows = parseCSV(await res.text()).filter(r=>r.some(c=>c!==""));
+    if(rows.length < 2) return [];
+
+    const head = rows[0].map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
+    const at = n => { const i=head.indexOf(n); return i>=0?i:LOAD_COLS.indexOf(n); };
+    const iDate=at("date"), iType=at("session_type"), iSlug=at("slug"),
+          iDur=at("duration_min"), iRpe=at("rpe"), iLoad=at("load_au");
+    if(iDate<0||iSlug<0) return [];
+
+    return rows.slice(1).filter(r=>(r[iSlug]||"").toLowerCase().trim()===slug).map(r=>{
+      const load = parseFloat(r[iLoad]);
+      return {
+        date: r[iDate], type: r[iType]||"",
+        load_au: isNaN(load) ? (parseFloat(r[iDur])||0)*(parseFloat(r[iRpe])||0) : load
+      };
+    });
+  }catch(e){
+    console.error("LOAD LOG not readable yet (normal before the first logged session):", e);
+    return [];
+  }
+}
+
+function addDaysISO(iso,n){
+  const p=iso.split("-"); const d=new Date(+p[0],+p[1]-1,+p[2]); d.setDate(d.getDate()+n);
+  const z=x=>(x<10?"0":"")+x; return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate());
+}
+
+/* One continuous daily series (zero-filled on rest days), then EWMA
+   acute/chronic + ACWR on top — identical approach to the coaches hub. */
+function loadDailySeries(entries){
+  if(!entries.length) return [];
+  const byDate = {};
+  entries.forEach(e=>{ byDate[e.date] = (byDate[e.date]||0) + e.load_au; });
+  const dates = Object.keys(byDate).sort();
+  const start = dates[0], end = todayISO();
+  const out = [];
+  for(let d=start; d<=end; d=addDaysISO(d,1)){
+    out.push({date:d, load: byDate[d]||0});
+    if(out.length>3650) break;
+  }
+  let acute=null, chronic=null;
+  return out.map(d=>{
+    acute   = acute===null   ? d.load : d.load*LOAD_ACUTE_ALPHA   + (1-LOAD_ACUTE_ALPHA)*acute;
+    chronic = chronic===null ? d.load : d.load*LOAD_CHRONIC_ALPHA + (1-LOAD_CHRONIC_ALPHA)*chronic;
+    return { date:d.date, load:d.load, acwr: chronic>0 ? acute/chronic : null };
+  });
+}
+
+function loadAcwrStatus(v){
+  if(v==null) return { cls:"gray", label:"No data yet" };
+  if(v>LOAD_BAND_HIGH) return { cls: v>1.5?"red":"amber", label:"Load rising fast" };
+  if(v<LOAD_BAND_LOW)  return { cls: v<0.5?"red":"amber", label:"Load dropping off" };
+  return { cls:"green", label:"Sweet spot" };
+}
+
+function renderLoad(entries){
+  const box = document.getElementById("load-card");
+  if(!entries.length){
+    box.innerHTML = `<div class="load-empty">No training load logged yet — this fills in once your coaches start logging session RPE.</div>`;
+    return;
+  }
+  const series = loadDailySeries(entries);
+  const latest = series[series.length-1];
+  const status = loadAcwrStatus(latest.acwr);
+
+  const sevenDaysAgo = addDaysISO(todayISO(), -7);
+  const sessions7 = new Set(entries.filter(e=>e.date>=sevenDaysAgo).map(e=>e.date)).size;
+  const lastSession = entries.reduce((a,b)=> a.date>b.date ? a : b);
+
+  const dotCls = status.cls==="green"?"dot-green":status.cls==="amber"?"dot-amber":status.cls==="red"?"dot-red":"dot-gray";
+  const textCls = status.cls==="green"?"sc-g":status.cls==="amber"?"sc-a":status.cls==="red"?"sc-r":"sc-mut";
+
+  const last14 = series.slice(-14);
+  const today = todayISO();
+
+  box.innerHTML = `
+    <div class="wellness-top">
+      <div>
+        <div class="w-date">Latest status</div>
+        <div class="w-status"><div class="w-dot ${dotCls}"></div><div class="w-status-text ${textCls}">${status.label}</div></div>
+      </div>
+    </div>
+    <div class="load-stats">
+      <div class="w-score-col">
+        <div class="w-score-label">ACWR</div>
+        <div class="w-score-val ${textCls}">${latest.acwr!=null?latest.acwr.toFixed(2):"–"}</div>
+      </div>
+      <div class="w-score-col">
+        <div class="w-score-label">Sessions (7d)</div>
+        <div class="w-score-val">${sessions7}</div>
+      </div>
+      <div class="w-score-col">
+        <div class="w-score-label">Last Session</div>
+        <div class="w-score-val" style="font-size:16px">${shortDay(lastSession.date)}</div>
+      </div>
+    </div>
+    <div class="w-history">
+      <div class="w-history-label">14-Day Load</div>
+      <div class="w-history-row">${last14.map(d=>{
+        const cls = d.load>0 ? "sc-g" : "sc-mut";
+        return `<div class="w-day ${d.date===today?"today":""}">
+          <div class="w-day-label">${shortDay(d.date)}</div>
+          <div class="w-day-score ${cls}">${d.load>0?Math.round(d.load):"–"}</div>
+        </div>`;
+      }).join("")}</div>
+    </div>
+  `;
 }
 
 /* ============================================================

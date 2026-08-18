@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surrey 89ers — Practice Videos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#008348;--green-dark:#005c33;--green-deep:#003d22;--green-dim:rgba(0,131,72,0.15);
+  --offwhite:#FAF9F6;--offwhite-mid:rgba(250,249,246,0.6);--muted:rgba(250,249,246,0.4);
+  --card:#0f1f16;--card2:#152a1c;--border:rgba(0,131,72,0.2);--border-soft:rgba(250,249,246,0.07);
+  --red:#e05555;--amber:#f59e0b;
+}
+body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;
+  border-bottom:1px solid var(--border-soft);position:sticky;top:0;background:rgba(8,15,11,.95);
+  backdrop-filter:blur(10px);z-index:40}
+.tb-l{display:flex;align-items:center;gap:11px}
+.tb-logo{width:32px;height:32px;border-radius:50%;background:var(--green-deep);display:flex;
+  align-items:center;justify-content:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:11px;color:#fff}
+.tb-t{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;line-height:1.2}
+.tb-s{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.back{background:var(--card);border:1px solid var(--border-soft);border-radius:7px;padding:7px 13px;
+  font-size:12px;font-weight:600;color:var(--offwhite-mid);text-decoration:none;transition:.15s;white-space:nowrap}
+.back:hover{color:var(--offwhite);border-color:var(--green)}
+
+.wrap{max-width:760px;margin:0 auto;padding:24px 22px 60px}
+.h1{font-family:"Space Grotesk",sans-serif;font-size:26px;font-weight:700}
+.h2{font-size:12.5px;color:var(--muted);margin-top:3px;margin-bottom:24px}
+
+.featured-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:22px;display:flex;flex-direction:column;color:var(--offwhite);text-decoration:none}
+.featured-top{padding:22px 24px 18px;display:flex;gap:20px;align-items:flex-start}
+.featured-icon{width:64px;height:64px;border-radius:10px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.featured-info{flex:1}
+.featured-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.featured-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.3px;margin-bottom:4px;color:var(--offwhite)}
+.featured-date{font-size:12px;color:var(--offwhite-mid)}
+.featured-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.featured-bottom{padding:0 24px 22px}
+.featured-btn{display:inline-flex;align-items:center;gap:10px;background:var(--green);color:#fff;font-size:13px;font-weight:700;padding:11px 22px;border-radius:8px;text-decoration:none;transition:background 0.15s}
+.featured-btn:hover{background:var(--green-dark)}
+.featured-btn-icon{font-size:16px}
+
+.video-list-grid{display:flex;flex-direction:column;gap:10px}
+.pv-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:16px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color 0.15s;text-decoration:none;color:var(--offwhite)}
+.pv-card:hover{border-color:var(--green);background:var(--card2)}
+.pv-num{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#FAF9F6;width:56px;text-align:right;flex-shrink:0;line-height:1}
+.pv-divider{width:1px;height:40px;background:var(--border-soft);flex-shrink:0}
+.pv-info{flex:1;min-width:0}
+.pv-title{font-size:14px;font-weight:700;color:var(--offwhite);margin-bottom:4px}
+.pv-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pv-arrow{font-size:18px;color:var(--green);flex-shrink:0;opacity:0.6}
+.pv-card:hover .pv-arrow{opacity:1}
+
+.meta-pill{font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:1px;text-transform:uppercase;display:inline-block}
+.pill-green{background:rgba(0,131,72,0.15);color:#4ade80;border:1px solid rgba(0,131,72,0.3)}
+.pill-amber{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)}
+.pill-rpe{background:rgba(250,249,246,0.07);color:var(--offwhite-mid);border:1px solid var(--border-soft)}
+.pill-phase{background:rgba(250,249,246,0.07);color:var(--offwhite-mid);border:1px solid var(--border-soft)}
+.pill-coach{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,131,72,0.3)}
+
+.empty{background:var(--card);border:1px dashed var(--border);border-radius:10px;padding:26px;
+  text-align:center;color:var(--muted);font-size:13px;line-height:1.7;margin-top:20px}
+.loading{text-align:center;color:var(--muted);font-size:13px;padding:56px 0}
+
+@media(max-width:720px){
+  .wrap{padding:18px 12px 50px}
+  .h1{font-size:21px}
+  .pv-num{width:40px;font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-l">
+    <div class="tb-logo">89</div>
+    <div><div class="tb-t">Surrey 89ers</div><div class="tb-s">Practice Videos</div></div>
+  </div>
+  <a class="back" id="back" href="/">&larr; Back</a>
+</div>
+
+<div class="wrap">
+  <div class="h1">Practice Videos</div>
+  <div class="h2" id="sub">Loading…</div>
+
+  <div id="main-content">
+    <div class="loading">Loading practice sessions…</div>
+  </div>
+</div>
+
+<script>
+/* Same published CSV the coaches hub's Video Library reads for its
+   Practice Sessions tab — this page is the player-facing equivalent.
+   No login here: this endpoint is already published to the web (not
+   just "anyone with the link"), so it's no more exposed by also
+   reading it from the public players site. */
+const PRACTICE_URLS={"practices":"https://docs.google.com/spreadsheets/d/e/2PACX-1vQKRFsRCVYbEDikkCWXUjHub2GdNPv3MjlRabHOffhhKixskBbM-L265fHu8j1LH1nEGPYTngmhWe7k/pub?single=true&output=csv&gid=798917355"};
+
+function clean(s){return(s||"").replace(/^"|"$/g,"").trim();}
+function parseCSV(text){
+  const rows=[];let row=[],cur="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],next=text[i+1];
+    if(inQ){
+      if(ch==='"'&&next==='"'){cur+='"';i++;}
+      else if(ch==='"'){inQ=false;}
+      else{cur+=ch;}
+    }else{
+      if(ch==='"'){inQ=true;}
+      else if(ch===","){row.push(cur);cur="";}
+      else if(ch==="\r"){}
+      else if(ch==="\n"){row.push(cur);rows.push(row);row=[];cur="";}
+      else{cur+=ch;}
+    }
+  }
+  if(cur.length||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.length>1||r[0]!=="").map(r=>r.map(c=>clean(c)));
+}
+
+async function fetchCSV(url){
+  try{const res=await fetch(url);return parseCSV(await res.text());}
+  catch(e){console.error("practice videos fetch failed",e);return [];}
+}
+
+function metaPill(text, cls){
+  return text?`<span class="meta-pill ${cls}">${text}</span>`:"";
+}
+
+async function init(){
+  const p=new URLSearchParams(location.search).get("p");
+  const back=document.getElementById("back");
+  if(p){ back.href="/"+p.toLowerCase().trim(); back.textContent="← My portal"; }
+
+  const practicesRaw=await fetchCSV(PRACTICE_URLS.practices);
+  const container=document.getElementById("main-content");
+
+  if(!practicesRaw.length){
+    document.getElementById("sub").textContent="";
+    container.innerHTML=`<div class="empty">Couldn't load practice videos right now — check back later.</div>`;
+    return;
+  }
+
+  const header=practicesRaw[0];
+  const records=practicesRaw.slice(1)
+    .filter(r=>r[0]&&r[0]!=="practice_num")
+    .map(r=>{
+      const o={};header.forEach((h,i)=>o[h.trim()]=r[i]||"");return o;
+    });
+
+  const withVideo=records
+    .filter(r=>r.synergy_url&&r.synergy_url.trim())
+    .reverse();
+
+  document.getElementById("sub").textContent = withVideo.length
+    ? `${withVideo.length} full session film${withVideo.length===1?"":"s"} · Most recent first`
+    : "";
+
+  if(withVideo.length===0){
+    container.innerHTML=`<div class="empty">No practice videos yet — check back after your next session.</div>`;
+    return;
+  }
+
+  const featured=withVideo[0];
+  const rest=withVideo.slice(1);
+
+  container.innerHTML=`
+    <a class="featured-card" href="${featured.synergy_url}" target="_blank">
+      <div class="featured-top">
+        <div class="featured-icon">▶</div>
+        <div class="featured-info">
+          <div class="featured-label">Latest Session</div>
+          <div class="featured-title">Practice ${featured.practice_num}</div>
+          <div class="featured-date">${featured.date||""}${featured.week?" · Week "+featured.week:""}</div>
+          <div class="featured-meta">
+            ${metaPill(featured.gd_status,"pill-amber")}
+            ${metaPill(featured.load,"pill-green")}
+            ${metaPill(featured.phase_of_season,"pill-phase")}
+            ${metaPill(featured.leading_coach,"pill-coach")}
+          </div>
+        </div>
+      </div>
+      <div class="featured-bottom">
+        <div class="featured-btn"><span class="featured-btn-icon">▶</span> Watch on Synergy</div>
+      </div>
+    </a>
+
+    ${rest.length?`
+    <div class="video-list-grid">
+      ${rest.map(pr=>`
+        <a class="pv-card" href="${pr.synergy_url}" target="_blank">
+          <div class="pv-num">${pr.practice_num}</div>
+          <div class="pv-divider"></div>
+          <div class="pv-info">
+            <div class="pv-title">${pr.date||""}${pr.week?" · Week "+pr.week:""}</div>
+            <div class="pv-meta">
+              ${pr.gd_status?`<span class="meta-pill pill-amber">${pr.gd_status}</span>`:""}
+              ${pr.load?`<span class="meta-pill pill-green">${pr.load}</span>`:""}
+              ${pr.phase_of_season?`<span class="meta-pill pill-phase">${pr.phase_of_season}</span>`:""}
+            </div>
+          </div>
+          <div class="pv-arrow">↗</div>
+        </a>`).join("")}
+    </div>`:""}
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

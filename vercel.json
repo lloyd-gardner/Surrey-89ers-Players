@@ -2,6 +2,7 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/schedule", "destination": "/schedule.html" },
+    { "source": "/practice-videos", "destination": "/practice-videos.html" },
     { "source": "/:slug", "destination": "/player.html" }
   ],
   "headers": [
@@ -13,6 +14,12 @@
     },
     {
       "source": "/schedule.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/practice-videos.html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
