@@ -239,17 +239,31 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 
 /* STRENGTH */
 .strength-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
-.strength-header{padding:14px 18px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center}
+.strength-header{padding:14px 18px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;gap:12px}
 .strength-title{font-size:13px;font-weight:600}
-.strength-phase{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);background:var(--green-dim);padding:3px 9px;border-radius:4px;border:1px solid rgba(0,131,72,0.25)}
-.strength-days{display:grid;grid-template-columns:repeat(3,1fr)}
-.strength-day{padding:14px 16px;border-right:1px solid var(--border-soft)}
-.strength-day:last-child{border-right:none}
+.strength-dates{font-size:10px;color:var(--muted);margin-top:2px}
+.strength-phase{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:4px;border:1px solid rgba(0,131,72,0.25);white-space:nowrap;flex-shrink:0}
+.strength-phase.mode-team{color:var(--green);background:var(--green-dim);border-color:rgba(0,131,72,0.25)}
+.strength-phase.mode-individual{color:var(--blue);background:var(--blue-dim);border-color:rgba(37,99,235,0.25)}
+.strength-days{display:flex;flex-direction:column}
+.strength-day{padding:14px 18px;border-top:1px solid var(--border-soft)}
+.strength-day:first-child{border-top:none}
 .day-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
-.ex-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.ex-row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
 .ex-row:last-child{border-bottom:none}
-.ex-name{font-size:11.5px;color:var(--offwhite)}
-.ex-sets{font-size:11.5px;color:var(--muted)}
+.ex-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ex-name{font-size:12px;color:var(--offwhite);font-weight:600}
+.ex-meta{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.ex-notes{font-size:10.5px;color:var(--muted);margin-top:2px;font-style:italic}
+.set-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.set-cell{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:6px;padding:4px 6px}
+.set-cell.logged{border-color:rgba(0,131,72,0.35);background:var(--green-dim)}
+.set-num{font-size:9px;color:var(--muted);width:14px;text-align:center;flex-shrink:0}
+.set-input{width:38px;background:transparent;border:none;border-bottom:1px solid var(--border-soft);color:var(--offwhite);font-size:11px;text-align:center;padding:2px 0}
+.set-input:focus{outline:none;border-bottom-color:var(--green)}
+.set-log-btn{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--green);background:none;border:none;cursor:pointer;padding:2px 4px}
+.set-log-btn:disabled{opacity:.4;cursor:default}
+.strength-empty{padding:24px 18px;text-align:center;color:var(--muted);font-size:12px}
 
 /* NOTES */
 .notes-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:16px}
@@ -383,7 +397,10 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
       <div class="section-header"><div class="section-title">Strength Programme</div></div>
       <div class="strength-card">
         <div class="strength-header">
-          <div class="strength-title" id="strength-block"></div>
+          <div>
+            <div class="strength-title" id="strength-block"></div>
+            <div class="strength-dates" id="strength-dates"></div>
+          </div>
           <div class="strength-phase" id="strength-phase"></div>
         </div>
         <div class="strength-days" id="strength-days"></div>
@@ -423,10 +440,28 @@ const CHECKIN_ENDPOINT = "https://script.google.com/macros/s/AKfycbx-xVqT4EUY_yg
 const LOG_TAB = "WELLNESS LOG";
 const METRICS = ["sleep_quality","sleep_duration","soreness","mood","stress","energy"];
 
+/* --- Strength programme ---
+   The PLAN (what to do) lives on a separate sheet the S&C coach owns —
+   STRENGTH_SHEET_ID, read via strengthTabURL(). Replace that ID once,
+   after creating/copying that sheet — see the README tab inside it.
+   The LOG (what was actually done) stays on the main Player Portals
+   sheet (SHEET_ID, above) in a "STRENGTH LOG" tab, same place/pattern
+   as WELLNESS LOG — read via the existing tabURL(), not strengthTabURL(). */
+const STRENGTH_SHEET_ID = "1oeX8mJsqdCFB2u-DXjBnpRb7SLiYyml2x133sn3vXqg";
+const STRENGTH_ASSIGNMENT_TAB = "ASSIGNMENT";
+const STRENGTH_TEAM_TAB = "STRENGTH PROGRAM";
+const STRENGTH_LOG_TAB = "STRENGTH LOG"; // tab name on the MAIN sheet
+
 /* Live read of any tab by NAME (not gid) so renaming/adding tabs just works.
    headers=0 stops Google guessing which row is a header and merging rows. */
 function tabURL(tabName){
   return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+         "/gviz/tq?tqx=out:csv&headers=0&sheet=" + encodeURIComponent(tabName) +
+         "&cachebust=" + Date.now();
+}
+/* Same idea, but against the separate Strength Program sheet */
+function strengthTabURL(tabName){
+  return "https://docs.google.com/spreadsheets/d/" + STRENGTH_SHEET_ID +
          "/gviz/tq?tqx=out:csv&headers=0&sheet=" + encodeURIComponent(tabName) +
          "&cachebust=" + Date.now();
 }
@@ -584,16 +619,18 @@ async function loadPortal(){
   }
 
   try{
-    const [res, logEntries, sched] = await Promise.all([
+    const [res, logEntries, sched, strength] = await Promise.all([
       fetch(tabURL(player.tab)),
       loadWellnessLog(slug),
-      loadSchedule()
+      loadSchedule(),
+      loadStrengthData(slug, player.name)
     ]);
     SCHEDULE = sched;
     if(!res.ok)throw new Error("fetch failed");
     LOG_ENTRIES = logEntries;
     const rows=parseCSV(await res.text());
     render(rows,player);
+    renderStrength(strength, slug, player.name);
   }catch(e){
     console.error("player tab fetch failed:",player.tab,e);
     showError("Could not load data for "+player.name+". Check that a tab named \u201c"+player.tab+"\u201d exists in the Google Sheet.");
@@ -686,21 +723,7 @@ function render(rows,player){
     }).join("");
   }
 
-  // STRENGTH
-  document.getElementById("strength-block").textContent=val(rows,"strength_block");
-  document.getElementById("strength-phase").textContent=val(rows,"strength_phase");
-  const strRows=rows.filter(r=>clean(r[0])==="STRENGTH");
-  const dayMap={},dayOrder=[];
-  strRows.forEach(r=>{
-    const d=clean(r[1]);
-    if(!dayMap[d]){dayMap[d]=[];dayOrder.push(d);}
-    dayMap[d].push({name:clean(r[2]),sets:clean(r[3])});
-  });
-  document.getElementById("strength-days").innerHTML=dayOrder.map(day=>`
-    <div class="strength-day">
-      <div class="day-label">${day}</div>
-      ${dayMap[day].map(e=>`<div class="ex-row"><span class="ex-name">${e.name}</span><span class="ex-sets">${e.sets}</span></div>`).join("")}
-    </div>`).join("");
+  // STRENGTH is loaded from its own sheet — see loadStrengthData/renderStrength below.
 
   // NOTES
   const noteRows=rows.filter(r=>clean(r[0])==="NOTE"&&clean(r[3])&&!clean(r[3]).includes("Add your first"));
@@ -831,6 +854,168 @@ async function loadWellnessLog(slug){
   }catch(e){
     console.error("wellness log not readable yet (normal before the first check-in):", e);
     return [];
+  }
+}
+
+/* ============================================================
+   STRENGTH PROGRAMME — reads a SEPARATE sheet (STRENGTH_SHEET_ID),
+   owned by the S&C coach. Three tabs:
+     ASSIGNMENT      slug | name | mode | block | start_date | end_date | note
+     STRENGTH PROGRAM  block | day | code | exercise | tempo | rest | sets | reps | notes   (the team default)
+     <Player Name>     same columns as STRENGTH PROGRAM               (individual plan, only if assigned)
+     STRENGTH LOG     append-only, one row per set a player logs
+   No day/set/rep count is fixed — whatever's on the sheet is what
+   renders, so the S&C coach can change the plan without a deploy.
+   ============================================================ */
+
+const STRENGTH_COLS = ["block","day","code","exercise","tempo","rest","sets","reps","notes"];
+const STRENGTH_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","set_number","reps","weight_kg","rpe","note"];
+
+function colIndex(headerRow, canonical){
+  const head = headerRow.map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
+  const at = {};
+  canonical.forEach(c=>{
+    const i = head.indexOf(c);
+    at[c] = i>=0 ? i : canonical.indexOf(c);
+  });
+  return at;
+}
+
+async function loadStrengthData(slug, playerName){
+  const out = { mode:"team", block:"", startDate:"", endDate:"", note:"", days:{}, dayOrder:[], loggedToday:{} };
+  try{
+    // 1. Who's on what
+    const aRes = await fetch(strengthTabURL(STRENGTH_ASSIGNMENT_TAB));
+    if(aRes.ok){
+      const aRows = parseCSV(await aRes.text()).filter(r=>r.some(c=>c!==""));
+      if(aRows.length>1){
+        const at = colIndex(aRows[0], ["slug","name","mode","block","start_date","end_date","note"]);
+        const mine = aRows.slice(1).find(r=>(r[at.slug]||"").toLowerCase().trim()===slug);
+        if(mine){
+          out.mode = (mine[at.mode]||"team").toLowerCase().trim()==="individual" ? "individual" : "team";
+          out.block = mine[at.block]||"";
+          out.startDate = mine[at.start_date]||"";
+          out.endDate = mine[at.end_date]||"";
+          out.note = mine[at.note]||"";
+        }
+      }
+    }
+  }catch(e){ console.error("STRENGTH ASSIGNMENT not readable — defaulting to team programme:", e); }
+
+  // 2. The actual plan: team default, or the player's own named tab
+  const planTab = out.mode==="individual" ? playerName : STRENGTH_TEAM_TAB;
+  try{
+    const pRes = await fetch(strengthTabURL(planTab));
+    if(pRes.ok){
+      const pRows = parseCSV(await pRes.text()).filter(r=>r.some(c=>c!==""));
+      if(pRows.length>1){
+        const pt = colIndex(pRows[0], STRENGTH_COLS);
+        let plan = pRows.slice(1).map(r=>({
+          block:r[pt.block]||"", day:r[pt.day]||"", code:r[pt.code]||"",
+          exercise:r[pt.exercise]||"", tempo:r[pt.tempo]||"", rest:r[pt.rest]||"",
+          sets:parseInt(r[pt.sets])||0, reps:r[pt.reps]||"", notes:r[pt.notes]||""
+        })).filter(e=>e.exercise);
+        // If a block is named in ASSIGNMENT and appears on the sheet, show just that block.
+        if(out.block && plan.some(e=>e.block===out.block)){
+          plan = plan.filter(e=>e.block===out.block);
+        }
+        plan.forEach(e=>{
+          if(!out.days[e.day]){ out.days[e.day]=[]; out.dayOrder.push(e.day); }
+          out.days[e.day].push(e);
+        });
+      }
+    }
+  }catch(e){ console.error("Strength plan tab not readable:", planTab, e); }
+
+  // 3. What's already been logged today, so the page survives a refresh mid-session
+  try{
+    // The log of sets actually performed lives on the MAIN Player Portals
+    // sheet (same one saveWellness writes to), not the separate Strength
+    // Program sheet — the S&C coach's sheet only holds the plan.
+    const lRes = await fetch(tabURL(STRENGTH_LOG_TAB));
+    if(lRes.ok){
+      const lRows = parseCSV(await lRes.text()).filter(r=>r.some(c=>c!==""));
+      if(lRows.length>1){
+        const lt = colIndex(lRows[0], STRENGTH_LOG_COLS);
+        const today = new Date().toISOString().slice(0,10);
+        lRows.slice(1).forEach(r=>{
+          if((r[lt.slug]||"").toLowerCase().trim()!==slug) return;
+          if((r[lt.date]||"")!==today) return;
+          const key = [r[lt.day],r[lt.code],r[lt.set_number]].join("|");
+          out.loggedToday[key] = { reps:r[lt.reps]||"", weight_kg:r[lt.weight_kg]||"" };
+        });
+      }
+    }
+  }catch(e){ console.error("STRENGTH LOG not readable yet (normal before the first set is logged):", e); }
+
+  return out;
+}
+
+function renderStrength(s, slug, playerName){
+  const badge = document.getElementById("strength-phase");
+  const dates = document.getElementById("strength-dates");
+  document.getElementById("strength-block").textContent = s.block || (s.mode==="team" ? "Team Programme" : "Individual Programme");
+  badge.textContent = s.mode==="individual" ? "Individual Programme" : "Team Programme";
+  badge.className = "strength-phase " + (s.mode==="individual" ? "mode-individual" : "mode-team");
+  dates.textContent = (s.startDate||s.endDate) ? ("Current phase: "+(s.startDate||"?")+" \u2192 "+(s.endDate||"?")) : "";
+
+  const wrap = document.getElementById("strength-days");
+  if(!s.dayOrder.length){
+    wrap.innerHTML = `<div class="strength-empty">No strength programme set up yet — check back once your S&C coach has added one.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = s.dayOrder.map(day => `
+    <div class="strength-day">
+      <div class="day-label">${day}</div>
+      ${s.days[day].map(e => {
+        const setCells = Array.from({length: e.sets||0}, (_,i)=>{
+          const n = i+1;
+          const key = [day, e.code, n].join("|");
+          const logged = s.loggedToday[key];
+          const id = "set_"+btoa(key).replace(/[^a-zA-Z0-9]/g,"");
+          return `<div class="set-cell${logged?" logged":""}" id="cell_${id}">
+            <span class="set-num">${n}</span>
+            <input class="set-input" id="reps_${id}" type="number" inputmode="numeric" placeholder="reps" value="${logged?logged.reps:""}">
+            <input class="set-input" id="wt_${id}" type="number" inputmode="decimal" placeholder="kg" value="${logged?logged.weight_kg:""}">
+            <button class="set-log-btn" onclick="logStrengthSet('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${n},'${id}',this)">${logged?"\u2713":"Log"}</button>
+          </div>`;
+        }).join("");
+        return `<div class="ex-row">
+          <div class="ex-top">
+            <span class="ex-name">${e.code?e.code+" · ":""}${e.exercise}</span>
+            <span class="ex-meta">${e.sets||"?"}x${e.reps||"?"}${e.tempo&&e.tempo!=="x"?" · tempo "+e.tempo:""}${e.rest&&e.rest.toUpperCase()!=="N/A"?" · rest "+e.rest:""}</span>
+          </div>
+          ${e.notes?`<div class="ex-notes">${e.notes}</div>`:""}
+          <div class="set-grid">${setCells}</div>
+        </div>`;
+      }).join("")}
+    </div>`).join("");
+}
+
+async function logStrengthSet(slug, name, mode, block, day, code, exercise, setNumber, id, btn){
+  const reps = document.getElementById("reps_"+id).value;
+  const weight = document.getElementById("wt_"+id).value;
+  if(!reps && !weight) return;
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = "\u2026";
+  try{
+    await fetch(CHECKIN_ENDPOINT, {
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({
+        type:"strength", slug, name, mode, block, day, code, exercise,
+        set_number:setNumber, reps, weight_kg:weight
+      })
+    });
+    document.getElementById("cell_"+id).classList.add("logged");
+    btn.textContent = "\u2713";
+  }catch(e){
+    console.error("saveStrength failed:", e);
+    btn.textContent = originalLabel;
+  }finally{
+    btn.disabled = false;
   }
 }
 
