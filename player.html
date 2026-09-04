@@ -281,14 +281,19 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .ex-name{font-size:12px;color:var(--offwhite);font-weight:600}
 .ex-meta{font-size:10.5px;color:var(--muted);white-space:nowrap}
 .ex-notes{font-size:10.5px;color:var(--muted);margin-top:2px;font-style:italic}
-.set-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.set-cell{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:6px;padding:4px 6px}
+.set-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.set-cell{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:8px;padding:6px 7px 6px 11px;transition:border-color .15s,background .15s}
 .set-cell.logged{border-color:rgba(0,131,72,0.35);background:var(--green-dim)}
-.set-num{font-size:9px;color:var(--muted);width:14px;text-align:center;flex-shrink:0}
-.set-input{width:38px;background:transparent;border:none;border-bottom:1px solid var(--border-soft);color:var(--offwhite);font-size:11px;text-align:center;padding:2px 0}
+.set-num{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;color:var(--muted);width:13px;text-align:center;flex-shrink:0}
+.set-cell.logged .set-num{color:var(--green)}
+.wt-field{display:flex;align-items:baseline;gap:3px}
+.set-input{width:32px;background:transparent;border:none;border-bottom:1px solid var(--border-soft);color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600;text-align:right;padding:2px 0}
 .set-input:focus{outline:none;border-bottom-color:var(--green)}
-.set-log-btn{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--green);background:none;border:none;cursor:pointer;padding:2px 4px}
-.set-log-btn:disabled{opacity:.4;cursor:default}
+.wt-unit{font-size:9px;color:var(--muted);flex-shrink:0}
+.set-log-btn{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);background:rgba(0,131,72,0.1);border:1px solid rgba(0,131,72,0.22);border-radius:6px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.set-log-btn:hover:not(:disabled){background:rgba(0,131,72,0.22)}
+.set-log-btn:disabled{opacity:.5;cursor:default}
+.set-cell.logged .set-log-btn{background:var(--green);color:#fff;border-color:var(--green)}
 .strength-empty{padding:24px 18px;text-align:center;color:var(--muted);font-size:12px}
 
 /* NOTES */
@@ -1183,9 +1188,8 @@ function renderStrength(s, slug, playerName){
           const id = "set_"+btoa(key).replace(/[^a-zA-Z0-9]/g,"");
           return `<div class="set-cell${logged?" logged":""}" id="cell_${id}">
             <span class="set-num">${n}</span>
-            <input class="set-input" id="reps_${id}" type="number" inputmode="numeric" placeholder="reps" value="${logged?logged.reps:""}">
-            <input class="set-input" id="wt_${id}" type="number" inputmode="decimal" placeholder="kg" value="${logged?logged.weight_kg:""}">
-            <button class="set-log-btn" onclick="logStrengthSet('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${n},'${id}',this)">${logged?"\u2713":"Log"}</button>
+            <div class="wt-field"><input class="set-input" id="wt_${id}" type="number" inputmode="decimal" placeholder="0" value="${logged?logged.weight_kg:""}"><span class="wt-unit">kg</span></div>
+            <button class="set-log-btn" title="Log set" onclick="logStrengthSet('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${n},'${(e.reps||"").toString().replace(/'/g,"\\'")}','${id}',this)">${logged?"\u2713":"Log"}</button>
           </div>`;
         }).join("");
         return `<div class="ex-row">
@@ -1200,10 +1204,9 @@ function renderStrength(s, slug, playerName){
     </div>`).join("");
 }
 
-async function logStrengthSet(slug, name, mode, block, day, code, exercise, setNumber, id, btn){
-  const reps = document.getElementById("reps_"+id).value;
+async function logStrengthSet(slug, name, mode, block, day, code, exercise, setNumber, prescribedReps, id, btn){
   const weight = document.getElementById("wt_"+id).value;
-  if(!reps && !weight) return;
+  if(!weight) return;
   btn.disabled = true;
   const originalLabel = btn.textContent;
   btn.textContent = "\u2026";
@@ -1213,7 +1216,7 @@ async function logStrengthSet(slug, name, mode, block, day, code, exercise, setN
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         type:"strength", slug, name, mode, block, day, code, exercise,
-        set_number:setNumber, reps, weight_kg:weight
+        set_number:setNumber, reps: prescribedReps, weight_kg:weight
       })
     });
     document.getElementById("cell_"+id).classList.add("logged");
