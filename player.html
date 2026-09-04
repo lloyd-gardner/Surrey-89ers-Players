@@ -281,8 +281,8 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .ex-name{font-size:12px;color:var(--offwhite);font-weight:600}
 .ex-meta{font-size:10.5px;color:var(--muted);white-space:nowrap}
 .ex-notes{font-size:10.5px;color:var(--muted);margin-top:2px;font-style:italic}
-.set-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.set-cell{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:8px;padding:6px 7px 6px 11px;transition:border-color .15s,background .15s}
+.set-grid{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.set-cell{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:8px;padding:6px 11px;transition:border-color .15s,background .15s}
 .set-cell.logged{border-color:rgba(0,131,72,0.35);background:var(--green-dim)}
 .set-num{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;color:var(--muted);width:13px;text-align:center;flex-shrink:0}
 .set-cell.logged .set-num{color:var(--green)}
@@ -290,10 +290,10 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .set-input{width:32px;background:transparent;border:none;border-bottom:1px solid var(--border-soft);color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600;text-align:right;padding:2px 0}
 .set-input:focus{outline:none;border-bottom-color:var(--green)}
 .wt-unit{font-size:9px;color:var(--muted);flex-shrink:0}
-.set-log-btn{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);background:rgba(0,131,72,0.1);border:1px solid rgba(0,131,72,0.22);border-radius:6px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
-.set-log-btn:hover:not(:disabled){background:rgba(0,131,72,0.22)}
-.set-log-btn:disabled{opacity:.5;cursor:default}
-.set-cell.logged .set-log-btn{background:var(--green);color:#fff;border-color:var(--green)}
+.ex-log-btn{height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:var(--green);background:rgba(0,131,72,0.1);border:1px solid rgba(0,131,72,0.25);border-radius:8px;padding:0 13px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.ex-log-btn:hover:not(:disabled){background:rgba(0,131,72,0.22)}
+.ex-log-btn:disabled{opacity:.5;cursor:default}
+.ex-log-btn.logged{background:var(--green);color:#fff;border-color:var(--green)}
 .strength-empty{padding:24px 18px;text-align:center;color:var(--muted);font-size:12px}
 
 /* NOTES */
@@ -1081,7 +1081,7 @@ function renderLoad(entries){
    ============================================================ */
 
 const STRENGTH_COLS = ["block","day","code","exercise","tempo","rest","sets","reps","notes"];
-const STRENGTH_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","set_number","reps","weight_kg","rpe","note"];
+const STRENGTH_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","sets","reps","weights_kg","rpe","note"];
 
 function colIndex(headerRow, canonical){
   const head = headerRow.map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
@@ -1153,8 +1153,13 @@ async function loadStrengthData(slug, playerName){
         lRows.slice(1).forEach(r=>{
           if((r[lt.slug]||"").toLowerCase().trim()!==slug) return;
           if((r[lt.date]||"")!==today) return;
-          const key = [r[lt.day],r[lt.code],r[lt.set_number]].join("|");
-          out.loggedToday[key] = { reps:r[lt.reps]||"", weight_kg:r[lt.weight_kg]||"" };
+          // One row per exercise now (not per set) — key by day+code, and
+          // split the weights list back into per-set values in set order.
+          const key = [r[lt.day],r[lt.code]].join("|");
+          out.loggedToday[key] = {
+            reps: r[lt.reps]||"",
+            weights: (r[lt.weights_kg]||"").split(",").map(w=>w.trim())
+          };
         });
       }
     }
@@ -1181,32 +1186,40 @@ function renderStrength(s, slug, playerName){
     <div class="strength-day">
       <div class="day-label">${day}</div>
       ${s.days[day].map(e => {
-        const setCells = Array.from({length: e.sets||0}, (_,i)=>{
+        const exKey = [day, e.code].join("|");
+        const logged = s.loggedToday[exKey];
+        const exId = "ex_"+btoa(exKey).replace(/[^a-zA-Z0-9]/g,"");
+        const totalSets = e.sets||0;
+        const setCells = Array.from({length: totalSets}, (_,i)=>{
           const n = i+1;
-          const key = [day, e.code, n].join("|");
-          const logged = s.loggedToday[key];
-          const id = "set_"+btoa(key).replace(/[^a-zA-Z0-9]/g,"");
-          return `<div class="set-cell${logged?" logged":""}" id="cell_${id}">
+          const wt = logged && logged.weights ? (logged.weights[i]||"") : "";
+          return `<div class="set-cell${logged?" logged":""}" data-ex="${exId}">
             <span class="set-num">${n}</span>
-            <div class="wt-field"><input class="set-input" id="wt_${id}" type="number" inputmode="decimal" placeholder="0" value="${logged?logged.weight_kg:""}"><span class="wt-unit">kg</span></div>
-            <button class="set-log-btn" title="Log set" onclick="logStrengthSet('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${n},'${(e.reps||"").toString().replace(/'/g,"\\'")}','${id}',this)">${logged?"\u2713":"Log"}</button>
+            <div class="wt-field"><input class="set-input" id="wt_${exId}_${n}" type="number" inputmode="decimal" placeholder="0" value="${wt}"><span class="wt-unit">kg</span></div>
           </div>`;
         }).join("");
+        const logBtn = totalSets ? `<button class="ex-log-btn${logged?" logged":""}" data-ex="${exId}" title="Log this exercise" onclick="logExercise('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${totalSets},'${(e.reps||"").toString().replace(/'/g,"\\'")}','${exId}',this)">${logged?"\u2713 Logged":"Log exercise"}</button>` : "";
         return `<div class="ex-row">
           <div class="ex-top">
             <span class="ex-name">${e.code?e.code+" · ":""}${e.exercise}</span>
             <span class="ex-meta">${e.sets||"?"}x${e.reps||"?"}${e.tempo&&e.tempo!=="x"?" · tempo "+e.tempo:""}${e.rest&&e.rest.toUpperCase()!=="N/A"?" · rest "+e.rest:""}</span>
           </div>
           ${e.notes?`<div class="ex-notes">${e.notes}</div>`:""}
-          <div class="set-grid">${setCells}</div>
+          <div class="set-grid">${setCells}${logBtn}</div>
         </div>`;
       }).join("")}
     </div>`).join("");
 }
 
-async function logStrengthSet(slug, name, mode, block, day, code, exercise, setNumber, prescribedReps, id, btn){
-  const weight = document.getElementById("wt_"+id).value;
-  if(!weight) return;
+async function logExercise(slug, name, mode, block, day, code, exercise, totalSets, prescribedReps, exId, btn){
+  const weights = [];
+  for(let n=1; n<=totalSets; n++){
+    const el = document.getElementById("wt_"+exId+"_"+n);
+    weights.push(el ? el.value.trim() : "");
+  }
+  const setsCompleted = weights.filter(w=>w!=="").length;
+  if(!setsCompleted) return;
+
   btn.disabled = true;
   const originalLabel = btn.textContent;
   btn.textContent = "\u2026";
@@ -1216,11 +1229,12 @@ async function logStrengthSet(slug, name, mode, block, day, code, exercise, setN
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({
         type:"strength", slug, name, mode, block, day, code, exercise,
-        set_number:setNumber, reps: prescribedReps, weight_kg:weight
+        sets: setsCompleted, reps: prescribedReps, weights_kg: weights.join(",")
       })
     });
-    document.getElementById("cell_"+id).classList.add("logged");
-    btn.textContent = "\u2713";
+    document.querySelectorAll('[data-ex="'+exId+'"]').forEach(el=>el.classList.add("logged"));
+    btn.textContent = "\u2713 Logged";
+    btn.classList.add("logged");
   }catch(e){
     console.error("saveStrength failed:", e);
     btn.textContent = originalLabel;
