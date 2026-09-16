@@ -64,7 +64,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .detail-h{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;margin-bottom:10px}
 .d-ev{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
 .d-ev:last-child{border-bottom:0}
-.d-time{width:56px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--offwhite-mid);
+.d-time{width:70px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--offwhite-mid);
   font-variant-numeric:tabular-nums;padding-top:1px}
 .d-body{flex:1;min-width:0}
 .d-title{font-size:13.5px;font-weight:600}
@@ -210,10 +210,19 @@ function catClass(c){
   if(k.includes("fiba")||k.includes("international"))return "intl";
   return "other";
 }
+function to12h(t){
+  if(!t) return t;
+  const m=/^(\d{1,2})[:.](\d{2})/.exec(t);
+  if(!m) return t;
+  let h=parseInt(m[1],10);
+  const ap = h>=12 ? "PM" : "AM";
+  h = h%12; if(h===0) h=12;
+  return h+":"+m[2]+" "+ap;
+}
 function fmtTime(ev){
   if(ev.allDay) return "All day";
   if(!ev.start) return "";
-  return ev.end ? ev.start : ev.start;
+  return to12h(ev.start);
 }
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -306,7 +315,7 @@ function render(){
       SEL===iso ? "sel" : ""
     ].filter(Boolean).join(" ");
     const chips=evs.map(e=>{
-      const label=(e.allDay||!e.start) ? e.title : e.start+" "+e.title;
+      const label=(e.allDay||!e.start) ? e.title : to12h(e.start)+" "+e.title;
       return `<div class="mev" style="${catStyle(e.cat)}" title="${e.title}">${label}</div>`;
     }).join("");
     const click = evs.length ? ` onclick="selectDay('${iso}')"` : "";
@@ -331,7 +340,7 @@ function render(){
     ${evs.map(e=>{
       const meta=[e.loc,e.notes].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
       return `<div class="d-ev">
-        <div class="d-time">${e.allDay?"All day":(e.start||"—")}</div>
+        <div class="d-time">${e.allDay?"All day":(e.start?to12h(e.start):"—")}</div>
         <div class="d-body">
           <div class="d-title">${e.title}<span class="d-tag" style="${catStyle(e.cat)}">${e.cat||"Event"}</span></div>
           ${meta?`<div class="d-meta">${meta}</div>`:""}
