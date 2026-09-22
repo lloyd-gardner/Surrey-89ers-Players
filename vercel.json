@@ -3,10 +3,11 @@
   "rewrites": [
     { "source": "/schedule", "destination": "/schedule.html" },
     { "source": "/practice-videos", "destination": "/practice-videos.html" },
+        { "source": "/game-videos", "destination": "/game-videos.html" },
     { "source": "/:slug", "destination": "/player.html" }
   ],
   "headers": [
-    {
+   {
       "source": "/player.html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
@@ -23,6 +24,10 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
-    }
+    },
+    {
+      "source": "/game-videos.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
   ]
 }
