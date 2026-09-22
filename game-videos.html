@@ -69,6 +69,15 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
   .h1{font-size:21px}
   .pv-num{width:40px;font-size:22px}
 }
+
+#video-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:500;flex-direction:column}
+.vo-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border-soft);flex-shrink:0}
+.vo-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700}
+.vo-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.vo-close{background:rgba(255,255,255,0.08);border:1px solid var(--border-soft);border-radius:6px;padding:7px 14px;color:var(--offwhite);font-size:12px;font-weight:600;cursor:pointer}
+.vo-close:hover{background:rgba(255,255,255,0.14)}
+.vo-embed{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;background:#000}
+.vo-embed iframe{width:100%;max-width:960px;aspect-ratio:16/9;border:none;border-radius:8px}
 </style>
   </head>
   <body>
@@ -79,6 +88,17 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
       <div><div class="tb-t">Surrey 89ers</div><div class="tb-s">Game Videos</div></div>
     </div>
     <a class="back" id="back" href="/">&larr; Back</a>
+  </div>
+
+  <div id="video-overlay">
+    <div class="vo-header">
+      <div>
+        <div class="vo-title" id="vo-title"></div>
+        <div class="vo-meta" id="vo-meta"></div>
+      </div>
+      <button class="vo-close" onclick="closeVideo()">✕ Close</button>
+    </div>
+    <div class="vo-embed"><iframe id="vo-iframe" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>
   </div>
 
   <div class="wrap">
@@ -132,6 +152,39 @@ function gameLabel(g){
     return g.title||`vs ${g.opponent||"Opponent"}`;
 }
 
+function ytEmbed(url){
+  if(!url) return "";
+  const m1=url.match(/youtu\.be\/([\w-]+)/);
+  const m2=url.match(/[?&]v=([\w-]+)/);
+  const m3=url.match(/embed\/([\w-]+)/);
+  const id=m1?m1[1]:m2?m2[1]:m3?m3[1]:null;
+  return id?"https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0":"";
+}
+
+function gameLinkAttrs(g, idx){
+  return isYouTube(g.video_url)
+    ? `href="javascript:void(0)" onclick="openGameVideo(${idx})"`
+    : `href="${g.video_url}" target="_blank"`;
+}
+
+function openGameVideo(idx){
+  const g=window._gamesList&&window._gamesList[idx];
+  if(!g) return;
+  const embed=ytEmbed(g.video_url);
+  if(!embed){window.open(g.video_url,"_blank");return;}
+  document.getElementById("vo-title").textContent=gameLabel(g);
+  document.getElementById("vo-meta").textContent=(g.date||"")+(g.opponent?" · vs "+g.opponent:"");
+  document.getElementById("vo-iframe").src=embed;
+  document.getElementById("video-overlay").style.display="flex";
+  document.body.style.overflow="hidden";
+}
+
+function closeVideo(){
+  document.getElementById("video-overlay").style.display="none";
+  document.getElementById("vo-iframe").src="";
+  document.body.style.overflow="";
+}
+
 async function init(){
   const p=new URLSearchParams(location.search).get("p");
   const back=document.getElementById("back");
@@ -157,6 +210,8 @@ async function init(){
     .filter(r=>r.video_url&&r.video_url.trim())
     .reverse();
 
+  window._gamesList=withVideo;
+
   document.getElementById("sub").textContent = withVideo.length
         ? `${withVideo.length} full game film${withVideo.length===1?"":"s"} · Most recent first`
     : "";
@@ -170,7 +225,7 @@ async function init(){
   const rest=withVideo.slice(1);
 
   container.innerHTML=`
-        <a class="featured-card" href="${featured.video_url}" target="_blank">
+        <a class="featured-card" ${gameLinkAttrs(featured,0)}>
           <div class="featured-top">
             <div class="featured-icon">▶</div>
             <div class="featured-info">
@@ -187,7 +242,7 @@ async function init(){
       ${rest.length?`
       <div class="video-list-grid">
         ${rest.map((g,i)=>`
-          <a class="pv-card" href="${g.video_url}" target="_blank">
+          <a class="pv-card" ${gameLinkAttrs(g,i+1)}>
             <div class="pv-num">${g.game_num||(rest.length-i)}</div>
             <div class="pv-divider"></div>
             <div class="pv-info">
