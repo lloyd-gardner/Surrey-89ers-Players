@@ -458,6 +458,19 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
           <div class="pvl-arrow">→</div>
         </a>
       </div>
+
+      <!-- GAME VIDEOS -->
+      <div class="section">
+        <div class="section-header"><div class="section-title">Game Videos</div></div>
+        <a class="practice-video-link" id="game-video-link" href="/game-videos">
+          <div class="pvl-icon">📹</div>
+          <div class="pvl-info">
+            <div class="pvl-title">Full game films</div>
+            <div class="pvl-sub">YouTube and Synergy footage from team games — updates automatically when your coaches add a new one.</div>
+          </div>
+          <div class="pvl-arrow">→</div>
+        </a>
+      </div>
     </div>
 
     <div class="tab-panel" id="tab-strength" style="display:none">
@@ -697,6 +710,9 @@ async function loadPortal(){
 
   const practiceLink = document.getElementById("practice-video-link");
   if(practiceLink) practiceLink.href = "/practice-videos?p="+encodeURIComponent(slug);
+
+  const gameLink = document.getElementById("game-video-link");
+  if(gameLink) gameLink.href = "/game-videos?p="+encodeURIComponent(slug);
 
   try{
     const [res, logEntries, sched, strength, loadEntries] = await Promise.all([
