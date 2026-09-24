@@ -3,7 +3,7 @@
   <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Surrey 89ers — Game Videos</title>
+  <title>Surrey 89ers — Games &amp; Scouting</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -78,6 +78,10 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .vo-close:hover{background:rgba(255,255,255,0.14)}
 .vo-embed{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;background:#000}
 .vo-embed iframe{width:100%;max-width:960px;aspect-ratio:16/9;border:none;border-radius:8px}
+
+.games-section{margin-bottom:28px}
+.games-section:last-child{margin-bottom:0}
+.games-section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 </style>
   </head>
   <body>
@@ -85,7 +89,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
   <div class="topbar">
     <div class="tb-l">
       <div class="tb-logo">89</div>
-      <div><div class="tb-t">Surrey 89ers</div><div class="tb-s">Game Videos</div></div>
+      <div><div class="tb-t">Surrey 89ers</div><div class="tb-s">Games &amp; Scouting</div></div>
     </div>
     <a class="back" id="back" href="/">&larr; Back</a>
   </div>
@@ -102,7 +106,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
   </div>
 
   <div class="wrap">
-    <div class="h1">Game Videos</div>
+    <div class="h1">Games &amp; Scouting</div>
     <div class="h2" id="sub">Loading…</div>
 
     <div id="main-content">
@@ -195,8 +199,8 @@ async function init(){
 
   if(!gamesRaw.length){
     document.getElementById("sub").textContent="";
-    container.innerHTML=`<div class="empty">Couldn't load game videos right now — check back later.</div>`;
-          return;
+    container.innerHTML=`<div class="empty">Couldn't load videos right now — check back later.</div>`;
+    return;
   }
 
   const header=gamesRaw[0];
@@ -204,7 +208,7 @@ async function init(){
     .filter(r=>r[0]&&r[0]!=="game_num")
     .map(r=>{
       const o={};header.forEach((h,i)=>o[h.trim()]=r[i]||"");return o;
-});
+    });
 
   const withVideo=records
     .filter(r=>r.video_url&&r.video_url.trim())
@@ -212,26 +216,37 @@ async function init(){
 
   window._gamesList=withVideo;
 
+  const isScouting=g=>(g.type||"").trim().toLowerCase()==="scouting";
+  const scouting=withVideo.filter(isScouting);
+  const gameFilm=withVideo.filter(g=>!isScouting(g));
+
   document.getElementById("sub").textContent = withVideo.length
-        ? `${withVideo.length} full game film${withVideo.length===1?"":"s"} · Most recent first`
+    ? `${scouting.length} scouting report${scouting.length===1?"":"s"} · ${gameFilm.length} full game film${gameFilm.length===1?"":"s"}`
     : "";
 
   if(withVideo.length===0){
-    container.innerHTML=`<div class="empty">No game videos yet — check back after the next game.</div>`;
+    container.innerHTML=`<div class="empty">No videos yet — check back after the next game.</div>`;
     return;
   }
 
-  const featured=withVideo[0];
-  const rest=withVideo.slice(1);
-
-  container.innerHTML=`
-        <a class="featured-card" ${gameLinkAttrs(featured,0)}>
-          <div class="featured-top">
-            <div class="featured-icon">▶</div>
-            <div class="featured-info">
-              <div class="featured-label">Latest Game</div>
-              <div class="featured-title">${gameLabel(featured)}</div>
-              <div class="featured-date">${featured.date||""}${featured.opponent?" · vs "+featured.opponent:""}</div>
+  function renderSection(title, icon, label, list, emptyText){
+    if(!list.length){
+      return `<div class="games-section">
+        <div class="games-section-title">${icon} ${title}</div>
+        <div class="empty">${emptyText}</div>
+      </div>`;
+    }
+    const featured=list[0];
+    const rest=list.slice(1);
+    return `<div class="games-section">
+      <div class="games-section-title">${icon} ${title}</div>
+      <a class="featured-card" ${gameLinkAttrs(featured,window._gamesList.indexOf(featured))}>
+        <div class="featured-top">
+          <div class="featured-icon">▶</div>
+          <div class="featured-info">
+            <div class="featured-label">${label}</div>
+            <div class="featured-title">${gameLabel(featured)}</div>
+            <div class="featured-date">${featured.date||""}${featured.opponent?" · vs "+featured.opponent:""}</div>
           </div>
         </div>
         <div class="featured-bottom">
@@ -242,20 +257,25 @@ async function init(){
       ${rest.length?`
       <div class="video-list-grid">
         ${rest.map((g,i)=>`
-          <a class="pv-card" ${gameLinkAttrs(g,i+1)}>
-            <div class="pv-num">${g.game_num||(rest.length-i)}</div>
+          <a class="pv-card" ${gameLinkAttrs(g,window._gamesList.indexOf(g))}>
+            <div class="pv-num">${g.game_num||"🔎"}</div>
             <div class="pv-divider"></div>
             <div class="pv-info">
               <div class="pv-title">${gameLabel(g)}</div>
               <div class="pv-meta">
                 ${g.date?`<span class="meta-pill pill-green">${g.date}</span>`:""}
-              ${g.opponent?`<span class="meta-pill pill-coach">vs ${g.opponent}</span>`:""}
+                ${g.opponent?`<span class="meta-pill pill-coach">vs ${g.opponent}</span>`:""}
+              </div>
             </div>
-                          </div>
-                          <div class="pv-arrow">↗</div>
-                        </a>`).join("")}
-    </div>`:""}
-  `;
+            <div class="pv-arrow">↗</div>
+          </a>`).join("")}
+      </div>`:""}
+    </div>`;
+  }
+
+  container.innerHTML=
+    renderSection("Scouting", "🔎", "Next Opponent", scouting, "No scouting video for the next opponent yet.")
+    + renderSection("Game Film", "📹", "Latest Game", gameFilm, "No game film yet.");
 }
 
 init();
