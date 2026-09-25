@@ -83,6 +83,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .games-section:last-child{margin-bottom:0}
 .games-section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:6px}
 </style>
+<script src="https://www.youtube.com/iframe_api"></script>
   </head>
   <body>
 
@@ -121,6 +122,9 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
    just "anyone with the link"), so it's no more exposed by also
      reading it from the public players site. */
   const GAMES_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQKRFsRCVYbEDikkCWXUjHub2GdNPv3MjlRabHOffhhKixskBbM-L265fHu8j1LH1nEGPYTngmhWe7k/pub?single=true&output=csv&gid=148193840";
+/* Same endpoint player.html posts wellness/strength/load check-ins to.
+   Used here to log which player watched which video (type:"video_view"). */
+const CHECKIN_ENDPOINT="https://script.google.com/macros/s/AKfycbx-xVqT4EUY_ygD-AvzmfXE4EMcya1qlrsFtnKY7WzMaDTj-w9dwrH2Pbuvjbd6Mu0cKA/exec";
 
 function clean(s){return(s||"").replace(/^"|"$/g,"").trim();}
 function parseCSV(text){
@@ -156,19 +160,98 @@ function gameLabel(g){
     return g.title||`vs ${g.opponent||"Opponent"}`;
 }
 
-function ytEmbed(url){
-  if(!url) return "";
+function ytVideoId(url){
+  if(!url) return null;
   const m1=url.match(/youtu\.be\/([\w-]+)/);
   const m2=url.match(/[?&]v=([\w-]+)/);
   const m3=url.match(/embed\/([\w-]+)/);
-  const id=m1?m1[1]:m2?m2[1]:m3?m3[1]:null;
-  return id?"https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0":"";
+  return m1?m1[1]:m2?m2[1]:m3?m3[1]:null;
+}
+
+function ytEmbed(url){
+  const id=ytVideoId(url);
+  return id?"https://www.youtube.com/embed/"+id+"?autoplay=1&rel=0&enablejsapi=1&origin="+encodeURIComponent(location.origin):"";
 }
 
 function gameLinkAttrs(g, idx){
   return isYouTube(g.video_url)
     ? `href="javascript:void(0)" onclick="openGameVideo(${idx})"`
     : `href="${g.video_url}" target="_blank"`;
+}
+
+/* ---------- watch tracking ----------
+   No login here, so "who's watching" is whichever slug this page was
+   opened with (?p=slug, same convention every portal link already uses),
+   cached in localStorage so a direct/bookmarked visit still knows who it
+   is. Logs "opened" the moment playback starts and "completed" once
+   they've reached 90% — a plain click-through with no play isn't logged
+   as watched. Synergy links open out to synergysports.com, which gives
+   us no visibility at all, so only YouTube clips can be tracked. */
+function getMySlug(){
+  try{return (localStorage.getItem("s89_slug")||"").toLowerCase().trim();}catch(e){return "";}
+}
+
+function logVideoView(videoId,title,event){
+  const slug=getMySlug();
+  if(!slug||!videoId) return;
+  try{
+    fetch(CHECKIN_ENDPOINT,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify({type:"video_view",slug:slug,video_id:videoId,title:title||"",event:event}),
+      redirect:"follow"
+    }).catch(function(){});
+  }catch(e){}
+}
+
+let ytApiReady=false, currentYtPlayer=null, watchState=null;
+window.onYouTubeIframeAPIReady=function(){
+  ytApiReady=true;
+  if(window._pendingYTAttach){ const fn=window._pendingYTAttach; window._pendingYTAttach=null; fn(); }
+};
+
+function onPlayerStateChange(e){
+  if(!watchState) return;
+  if(e.data===YT.PlayerState.PLAYING){
+    if(!watchState.openedSent){
+      watchState.openedSent=true;
+      logVideoView(watchState.videoId,watchState.title,"opened");
+    }
+    if(!watchState.poll){
+      watchState.poll=setInterval(function(){
+        if(!currentYtPlayer||!watchState) return;
+        try{
+          const dur=currentYtPlayer.getDuration();
+          const cur=currentYtPlayer.getCurrentTime();
+          if(dur>0 && cur/dur>=0.9 && !watchState.completedSent){
+            watchState.completedSent=true;
+            logVideoView(watchState.videoId,watchState.title,"completed");
+          }
+        }catch(err){}
+      },3000);
+    }
+  }
+  if(e.data===YT.PlayerState.ENDED && watchState && !watchState.completedSent){
+    watchState.completedSent=true;
+    logVideoView(watchState.videoId,watchState.title,"completed");
+  }
+}
+
+function startWatchTracking(videoId,title){
+  if(!videoId) return;
+  watchState={videoId:videoId,title:title,openedSent:false,completedSent:false,poll:null};
+  const attach=function(){
+    if(currentYtPlayer){ try{currentYtPlayer.destroy();}catch(e){} currentYtPlayer=null; }
+    currentYtPlayer=new YT.Player("vo-iframe",{events:{onStateChange:onPlayerStateChange}});
+  };
+  if(window.YT && window.YT.Player) attach();
+  else window._pendingYTAttach=attach;
+}
+
+function stopWatchTracking(){
+  if(watchState&&watchState.poll) clearInterval(watchState.poll);
+  watchState=null;
+  if(currentYtPlayer){ try{currentYtPlayer.destroy();}catch(e){} currentYtPlayer=null; }
 }
 
 function openGameVideo(idx){
@@ -181,18 +264,24 @@ function openGameVideo(idx){
   document.getElementById("vo-iframe").src=embed;
   document.getElementById("video-overlay").style.display="flex";
   document.body.style.overflow="hidden";
+  startWatchTracking(ytVideoId(g.video_url),gameLabel(g));
 }
 
 function closeVideo(){
   document.getElementById("video-overlay").style.display="none";
   document.getElementById("vo-iframe").src="";
   document.body.style.overflow="";
+  stopWatchTracking();
 }
 
 async function init(){
   const p=new URLSearchParams(location.search).get("p");
   const back=document.getElementById("back");
-  if(p){ back.href="/"+p.toLowerCase().trim(); back.textContent="← My portal"; }
+  if(p){
+    const s=p.toLowerCase().trim();
+    try{localStorage.setItem("s89_slug",s);}catch(e){}
+    back.href="/"+s; back.textContent="← My portal";
+  }
 
   const gamesRaw=await fetchCSV(GAMES_URL);
   const container=document.getElementById("main-content");
