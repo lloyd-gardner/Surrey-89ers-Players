@@ -82,6 +82,23 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .games-section{margin-bottom:28px}
 .games-section:last-child{margin-bottom:0}
 .games-section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.vl-card{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color 0.15s;text-decoration:none;color:var(--offwhite);display:block}
+.vl-card:hover{border-color:var(--green);background:var(--card2)}
+.vl-thumb{height:112px;position:relative;display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center}
+.vl-thumb-scout{background:linear-gradient(135deg,#1a1028,#0d0818)}
+.vl-thumb-game{background:linear-gradient(135deg,#0a2018,#051008)}
+.vl-thumb.has-thumb::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,0.32)}
+.vl-play{width:40px;height:40px;background:rgba(250,249,246,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.vl-play::after{content:"";display:block;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:13px solid #080f0b;margin-left:3px}
+.vl-synergy{width:40px;height:40px;background:rgba(0,131,72,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--green);position:relative;z-index:1}
+.vl-type-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:0.5px;z-index:1}
+.type-scout{background:rgba(167,139,250,0.15);color:#a78bfa}
+.type-game{background:rgba(0,131,72,0.15);color:var(--green)}
+.vl-body{padding:12px 14px}
+.vl-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.vl-date{font-size:11px;color:var(--muted)}
 </style>
 <script src="https://www.youtube.com/iframe_api"></script>
   </head>
@@ -318,53 +335,50 @@ async function init(){
     return;
   }
 
-  function renderSection(title, icon, label, list, emptyText){
+  /* Same thumbnail-grid card format as the coaches hub's Games & Scouting
+     tab — a real YouTube thumbnail when we can get one, otherwise the
+     coloured placeholder (Synergy has no public thumbnail API). */
+  function renderSection(title, icon, thumbClass, badgeClass, list, emptyText){
     if(!list.length){
       return `<div class="games-section">
         <div class="games-section-title">${icon} ${title}</div>
         <div class="empty">${emptyText}</div>
       </div>`;
     }
-    const featured=list[0];
-    const rest=list.slice(1);
     return `<div class="games-section">
       <div class="games-section-title">${icon} ${title}</div>
-      <a class="featured-card" ${gameLinkAttrs(featured,window._gamesList.indexOf(featured))}>
-        <div class="featured-top">
-          <div class="featured-icon">▶</div>
-          <div class="featured-info">
-            <div class="featured-label">${label}</div>
-            <div class="featured-title">${gameLabel(featured)}</div>
-            <div class="featured-date">${featured.date||""}${featured.opponent?" · vs "+featured.opponent:""}</div>
-          </div>
-        </div>
-        <div class="featured-bottom">
-          <div class="featured-btn"><span class="featured-btn-icon">▶</span> Watch ${isYouTube(featured.video_url)?"on YouTube":"on Synergy"}</div>
-        </div>
-      </a>
-
-      ${rest.length?`
-      <div class="video-list-grid">
-        ${rest.map((g,i)=>`
-          <a class="pv-card" ${gameLinkAttrs(g,window._gamesList.indexOf(g))}>
-            <div class="pv-num">${g.game_num||"🔎"}</div>
-            <div class="pv-divider"></div>
-            <div class="pv-info">
-              <div class="pv-title">${gameLabel(g)}</div>
-              <div class="pv-meta">
-                ${g.date?`<span class="meta-pill pill-green">${g.date}</span>`:""}
-                ${g.opponent?`<span class="meta-pill pill-coach">vs ${g.opponent}</span>`:""}
-              </div>
+      <div class="video-grid">
+        ${list.map(g=>{
+          const idx=window._gamesList.indexOf(g);
+          const isYT=isYouTube(g.video_url);
+          const id=isYT?ytVideoId(g.video_url):null;
+          const thumbStyle=id?` style="background-image:url(https://img.youtube.com/vi/${id}/hqdefault.jpg)"`:"";
+          return `<a class="vl-card" ${gameLinkAttrs(g,idx)}>
+            <div class="vl-thumb ${id?"has-thumb":thumbClass}"${thumbStyle}>
+              <div class="${isYT?"vl-play":"vl-synergy"}">${isYT?"":"▶"}</div>
+              <span class="vl-type-badge ${badgeClass}">${title}</span>
             </div>
-            <div class="pv-arrow">↗</div>
-          </a>`).join("")}
-      </div>`:""}
+            <div class="vl-body">
+              <div class="vl-title">${gameLabel(g)}</div>
+              <div class="vl-date">${g.date||""}${g.opponent?" · vs "+g.opponent:""}</div>
+            </div>
+          </a>`;
+        }).join("")}
+      </div>
     </div>`;
   }
 
   container.innerHTML=
-    renderSection("Scouting", "🔎", "Next Opponent", scouting, "No scouting video for the next opponent yet.")
-    + renderSection("Game Film", "📹", "Latest Game", gameFilm, "No game film yet.");
+    renderSection("Scouting", "🔎", "vl-thumb-scout", "type-scout", scouting, "No scouting video for the next opponent yet.")
+    + renderSection("Game Film", "📹", "vl-thumb-game", "type-game", gameFilm, "No game film yet.");
+
+  /* Deep-link from the portal preview: /game-videos?p=slug&v=YOUTUBE_ID
+     opens that video straight away instead of landing on the grid. */
+  const vParam=new URLSearchParams(location.search).get("v");
+  if(vParam){
+    const match=withVideo.find(g=>ytVideoId(g.video_url)===vParam);
+    if(match) setTimeout(()=>openGameVideo(window._gamesList.indexOf(match)),50);
+  }
 }
 
 init();
