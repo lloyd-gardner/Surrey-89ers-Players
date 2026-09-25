@@ -687,6 +687,9 @@ async function loadPortal(){
     showError("No player specified. Use the link your coach sent you.");
     return;
   }
+  /* Cache the slug so other pages (game-videos, practice-videos, schedule)
+     still know who this is even if opened directly without ?p=slug. */
+  try{localStorage.setItem("s89_slug", slug);}catch(e){}
 
   let roster;
   try{
