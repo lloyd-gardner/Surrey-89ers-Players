@@ -3,6 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080f0b">
+<meta name="apple-mobile-web-app-title" content="89ers">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<script>
+/* Each player gets their own web-app manifest, so "Add to Home Screen"
+   installs an icon that opens on THEIR page. iPhones only allow
+   notifications from a portal installed this way. */
+(function(){
+  var q=new URLSearchParams(location.search).get("p");
+  var slug=(q||location.pathname.replace(/^\/+/,"").replace(/\.html?$/i,"")).toLowerCase().trim();
+  var link=document.createElement("link");
+  link.rel="manifest";
+  link.href="/api/manifest?p="+encodeURIComponent(slug);
+  document.head.appendChild(link);
+})();
+</script>
 <title id="page-title">Surrey 89ers — Player Portal</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -174,6 +191,21 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .ci-open.due{animation:ciPulse 2.4s ease-in-out infinite}
 @keyframes ciPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,131,72,.55)}50%{box-shadow:0 0 0 9px rgba(0,131,72,0)}}
 .ci-done{font-size:11px;color:var(--muted)}
+
+/* ===== NOTIFICATIONS ===== */
+.push-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);
+  border-left:3px solid var(--green);border-radius:12px;padding:14px 16px;margin-bottom:-6px}
+.push-text{flex:1;min-width:0}
+.push-title{font-family:"Space Grotesk",sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+.push-sub{font-size:12px;color:var(--offwhite-mid);line-height:1.5}
+.push-sub b{color:var(--offwhite);font-weight:600}
+.push-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.push-later{background:none;border:0;color:var(--muted);font-size:12px;padding:9px 8px;cursor:pointer;font-family:inherit}
+.push-later:hover{color:var(--offwhite)}
+.push-msg{font-size:12px;color:var(--red);margin-top:6px}
+.push-foot{text-align:center;font-size:11px;color:var(--muted);padding:0 24px;margin-top:-56px;margin-bottom:28px}
+.push-foot button{background:none;border:0;color:var(--offwhite-mid);font-size:11px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 4px}
+@media(max-width:560px){.push-card{flex-direction:column;align-items:stretch}.push-actions{justify-content:flex-start}}
 
 .ci-overlay{position:fixed;inset:0;background:rgba(4,8,6,.82);backdrop-filter:blur(4px);
   z-index:900;display:none;align-items:flex-end;justify-content:center}
@@ -384,6 +416,8 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 
   <div class="content">
     <div class="tab-panel" id="tab-home">
+      <!-- NOTIFICATIONS (filled in by initPush; hidden until both the sender and the endpoint are live) -->
+      <div class="push-card" id="push-card" style="display:none"></div>
       <!-- WELLNESS -->
       <div class="section">
         <div class="section-header"><div class="section-title">Daily Wellness</div><div class="section-note" id="w-submitted"></div><button class="ci-open" id="ci-open" onclick="openCheckIn()">Check in</button></div>
@@ -485,6 +519,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
       </div>
     </div>
   </div>
+  <div class="push-foot" id="push-foot" style="display:none">Notifications are on for this device · <button type="button" onclick="disablePush()">Turn off</button></div>
   <div class="footer">Surrey 89ers Basketball · Confidential · For player use only</div>
 </div>
 
@@ -931,6 +966,7 @@ function render(rows,player){
 
   document.getElementById("loading").style.display="none";
   document.getElementById("portal").style.display="block";
+  portalReady();
 }
 
 
@@ -1647,6 +1683,225 @@ function renderWeek(){
   }
 
   body.innerHTML=`<div class="wk-grid">${cols}</div>${detail}`;
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ------------------------------------------------------------
+   A player taps "Turn on notifications" once. The phone gives us
+   a subscription, which is saved (privately) by the Apps Script
+   endpoint. The endpoint decides when to notify; /api/push on
+   this site delivers it; sw.js shows it.
+
+   Nothing is shown to players until BOTH halves are live — the
+   sender has its keys (GET /api/push) and the endpoint answers
+   push_ping — so this page is safe to deploy ahead of either.
+   ============================================================ */
+var PUSH = { started:false, key:null, reg:null, state:"" };
+
+function pushStore(k, v){
+  try{
+    if(v === undefined) return localStorage.getItem(k);
+    if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, v);
+  }catch(e){}
+  return null;
+}
+function isIOS(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function isStandalone(){
+  return navigator.standalone === true ||
+         (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+}
+function pushDevice(){
+  var ua = navigator.userAgent;
+  var what = /iphone/i.test(ua) ? "iPhone" : isIOS() ? "iPad" : /android/i.test(ua) ? "Android" :
+             /mac/i.test(ua) ? "Mac" : /windows/i.test(ua) ? "Windows" : "Other";
+  return what + (isStandalone() ? " app" : " browser");
+}
+function pushKeyBytes(b64){
+  var pad = "=".repeat((4 - b64.length % 4) % 4);
+  var raw = atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  var out = new Uint8Array(raw.length);
+  for(var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+async function pushPost(payload){
+  var res = await fetch(CHECKIN_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+    redirect: "follow"
+  });
+  return res.json();
+}
+
+/* The sender's public key, or null while either half isn't live yet.
+   Remembered once found, so this costs nothing on later visits. */
+async function pushBackendKey(){
+  var saved = pushStore("s89_push_key");
+  if(saved) return saved;
+  try{
+    var a = await (await fetch("/api/push", { cache: "no-store" })).json();
+    if(!a || !a.ok || !a.publicKey) return null;
+    var b = await pushPost({ type: "push_ping" });
+    if(!b || b.push !== true) return null;
+    pushStore("s89_push_key", a.publicKey);
+    return a.publicKey;
+  }catch(e){ return null; }
+}
+
+function showPushFoot(on){
+  var f = document.getElementById("push-foot");
+  if(f) f.style.display = on ? "block" : "none";
+}
+function hidePushCard(){
+  var c = document.getElementById("push-card");
+  if(c){ c.style.display = "none"; c.innerHTML = ""; }
+}
+/* "Not now" hides the card for a week rather than for good. */
+function pushSnoozed(){
+  var t = parseInt(pushStore("s89_push_later") || "0", 10);
+  return t && (Date.now() - t) < 7 * 86400000;
+}
+function snoozePush(){ pushStore("s89_push_later", String(Date.now())); hidePushCard(); }
+
+function showPushCard(state, msg){
+  var c = document.getElementById("push-card");
+  if(!c) return;
+  PUSH.state = state;
+  var later = '<button type="button" class="push-later" onclick="snoozePush()">Not now</button>';
+  var html = "";
+  if(state === "ask"){
+    html = '<div class="push-text"><div class="push-title">Get reminders on this phone</div>' +
+           '<div class="push-sub">A nudge if you haven\'t checked in, and a heads-up when a new video lands on your page.</div>' +
+           '<div class="push-msg" id="push-msg"></div></div>' +
+           '<div class="push-actions"><button type="button" class="ci-open" id="push-on" onclick="enablePush()">Turn on notifications</button>' + later + '</div>';
+  }else if(state === "install"){
+    html = '<div class="push-text"><div class="push-title">Add your portal to your Home Screen</div>' +
+           '<div class="push-sub">That\'s how iPhones allow reminders. In Safari tap <b>Share</b>, then <b>Add to Home Screen</b>, then open the portal from the new icon. ' +
+           'Already have the icon? Remove it and add it again.</div></div>' +
+           '<div class="push-actions">' + later + '</div>';
+  }else if(state === "update"){
+    html = '<div class="push-text"><div class="push-title">Reminders need a newer iOS</div>' +
+           '<div class="push-sub">Update your iPhone in <b>Settings › General › Software Update</b> (iOS 16.4 or later), then reopen the portal.</div></div>' +
+           '<div class="push-actions">' + later + '</div>';
+  }else if(state === "blocked"){
+    html = '<div class="push-text"><div class="push-title">Notifications are blocked</div>' +
+           '<div class="push-sub">Turn them back on in your phone\'s <b>Settings › Notifications › 89ers</b>, then reopen the portal.</div></div>' +
+           '<div class="push-actions">' + later + '</div>';
+  }
+  c.innerHTML = html;
+  c.style.display = "flex";
+  if(msg){ var m = document.getElementById("push-msg"); if(m) m.textContent = msg; }
+}
+
+/* Tell the endpoint about this phone. Skipped when it already knows. */
+async function pushSync(sub, welcome){
+  var slug = currentSlug();
+  var mark = slug + "|" + sub.endpoint;
+  if(!welcome && pushStore("s89_push_sync") === mark) return { ok: true };
+  var out = await pushPost({ type: "push_subscribe", slug: slug, subscription: sub.toJSON(),
+                             device: pushDevice(), welcome: !!welcome });
+  if(!out || !out.ok) throw new Error((out && out.error) || "could not save subscription");
+  pushStore("s89_push_sync", mark);
+  pushStore("s89_push_slug", slug);
+  return out;
+}
+
+async function initPush(){
+  if(PUSH.started) return;
+  PUSH.started = true;
+  try{
+    /* A phone belongs to one player. If this device is already set up
+       for someone else's page (a coach looking round, say), leave it be. */
+    var owner = pushStore("s89_push_slug");
+    if(owner && owner !== currentSlug()) return;
+
+    PUSH.key = await pushBackendKey();
+    if(!PUSH.key) return;                               // not switched on yet — show nothing
+
+    if(isIOS() && !isStandalone()){ if(!pushSnoozed()) showPushCard("install"); return; }
+    if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)){
+      if(isIOS() && !pushSnoozed()) showPushCard("update");
+      return;
+    }
+
+    PUSH.reg = await navigator.serviceWorker.register("/sw.js");
+    var sub = await PUSH.reg.pushManager.getSubscription();
+    if(Notification.permission === "denied"){ if(!pushSnoozed()) showPushCard("blocked"); return; }
+    if(sub && Notification.permission === "granted"){
+      await pushSync(sub, false);
+      showPushFoot(true);
+      return;
+    }
+    if(!pushSnoozed()) showPushCard("ask");
+  }catch(e){
+    console.error("notifications unavailable:", e);
+  }
+}
+
+async function enablePush(){
+  var btn = document.getElementById("push-on");
+  if(btn){ btn.disabled = true; btn.textContent = "Turning on…"; }
+  try{
+    var perm = await Notification.requestPermission();
+    if(perm !== "granted"){ showPushCard(perm === "denied" ? "blocked" : "ask"); return; }
+
+    var reg = await navigator.serviceWorker.ready;
+    var sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: pushKeyBytes(PUSH.key) });
+    }
+    var out = await pushSync(sub, true);
+    hidePushCard();
+    showPushFoot(true);
+    if(out.welcome === false){
+      console.warn("subscribed, but the confirmation notification could not be sent");
+    }
+  }catch(e){
+    console.error("could not turn on notifications:", e);
+    pushStore("s89_push_key", null);                    // re-check the sender next time
+    showPushCard("ask", "Couldn't turn on — check your signal and try again.");
+  }
+}
+
+async function disablePush(){
+  try{
+    var reg = await navigator.serviceWorker.ready;
+    var sub = await reg.pushManager.getSubscription();
+    if(sub){
+      var endpoint = sub.endpoint;
+      await sub.unsubscribe();
+      pushPost({ type: "push_unsubscribe", endpoint: endpoint }).catch(function(){});
+    }
+  }catch(e){ console.error("could not turn off notifications:", e); }
+  pushStore("s89_push_sync", null);
+  pushStore("s89_push_slug", null);
+  showPushFoot(false);
+  showPushCard("ask");
+}
+
+/* Runs after every render; only acts the first time. A notification
+   opens the portal with ?checkin=1 (straight into the check-in) or
+   ?tab=dev (straight to the videos). */
+var PORTAL_READY = false;
+function portalReady(){
+  if(PORTAL_READY) return;
+  PORTAL_READY = true;
+  try{
+    var q = new URLSearchParams(location.search);
+    var tab = q.get("tab");
+    if(tab === "dev" || tab === "strength") switchTab(tab);
+    if(q.get("checkin") === "1" && !LOG_ENTRIES.some(function(e){ return e.date === todayISO(); })) openCheckIn();
+    if(tab || q.has("checkin")){
+      q.delete("tab"); q.delete("checkin");
+      var rest = q.toString();
+      history.replaceState(null, "", location.pathname + (rest ? "?" + rest : ""));
+    }
+  }catch(e){ console.error(e); }
+  initPush();
 }
 
 loadPortal();
