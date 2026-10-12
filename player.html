@@ -80,6 +80,12 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .ph-photo.on{display:block}
 @media(max-width:700px){.ph-photo{height:112px;margin-bottom:-8px}}
 @media(max-width:430px){.ph-photo{height:92px}}
+/* Waist-up shoot cut-outs (/photos/full/): taller, rising into the cover.
+   The negative top margin keeps the header row the same height as before,
+   so the name and tabs don't move down. */
+.ph-photo.full{height:240px;margin-top:-82px}
+@media(max-width:700px){.ph-photo.full{height:170px;margin-top:-58px}}
+@media(max-width:430px){.ph-photo.full{height:136px;margin-top:-44px}}
 
 .player-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .meta-tag{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:4px}
@@ -1579,8 +1585,9 @@ let SCHEDULE=[], WEEK_OFF=0;
 function shiftWeek(n){ WEEK_OFF+=n; WK_SEL=null; renderWeek(); }
 
 
-/* Player cut-outs live in this repo under /photos/<slug>.png.
-   A ROSTER "photo" column overrides that with any full URL. */
+/* Player cut-outs live in this repo under /photos/<slug>.png (headshot,
+   also used by the coaches' dashboard circles) and /photos/full/<slug>.png
+   (waist-up, portal header only). A ROSTER "photo" column overrides both. */
 const PHOTO_BASE="/photos/";
 function photoURL(p){
   const custom=(p.photo||"").trim();
@@ -1592,8 +1599,20 @@ function setPlayerPhoto(p){
   if(!el||!p) return;
   el.alt=p.name||"";
   el.onload=()=>el.classList.add("on");     /* only show once it actually loads */
-  el.onerror=()=>el.classList.remove("on"); /* no photo yet: header just closes up */
-  el.src=photoURL(p);
+  const head=photoURL(p);
+  const custom=/^https?:\/\//i.test((p.photo||"").trim());
+  if(custom){
+    el.onerror=()=>el.classList.remove("on"); /* no photo yet: header just closes up */
+    el.src=head; return;
+  }
+  /* prefer the waist-up shot; fall back to the headshot at the old size */
+  el.classList.add("full");
+  el.onerror=()=>{
+    el.classList.remove("full");
+    el.onerror=()=>el.classList.remove("on");
+    el.src=head;
+  };
+  el.src=PHOTO_BASE+"full/"+p.slug+".png";
 }
 
 /* Same category palette the coaches' calendar uses: [background, text, border] */
