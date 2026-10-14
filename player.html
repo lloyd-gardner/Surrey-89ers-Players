@@ -241,6 +241,24 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .ci-toggle{display:flex;gap:8px}
 .ci-toggle .ci-opt{flex:1;padding:10px 0;font-size:13px}
 
+/* treatment time slots (Oct 2026) */
+.ci-slots{display:none;margin-top:12px;padding:12px;border-radius:10px;
+  background:var(--card);border:1px solid var(--border)}
+.ci-slots.show{display:block}
+.ci-slots-q{font-size:12px;font-weight:600;margin-bottom:2px}
+.ci-slots-hint{font-size:11px;color:var(--muted);margin-bottom:9px}
+.ci-slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ci-slot-grid .ci-opt{padding:9px 0 7px;font-size:13px;background:var(--card2);
+  display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1}
+.ci-slot-grid .ci-opt small{font-family:"Inter",sans-serif;font-size:9.5px;font-weight:600;
+  letter-spacing:.3px;color:var(--muted)}
+.ci-slot-grid .ci-opt.sel{background:var(--green);border-color:var(--green);color:#fff}
+.ci-slot-grid .ci-opt.sel small{color:rgba(255,255,255,.85)}
+.ci-slot-grid .ci-opt:disabled{opacity:.35;cursor:default}
+.ci-slot-grid .ci-opt:disabled:hover{border-color:var(--border)}
+.ci-slots-none{font-size:12px;color:var(--offwhite-mid);line-height:1.45}
+@media(max-width:380px){.ci-slot-grid{grid-template-columns:repeat(2,1fr)}}
+
 .ci-note{width:100%;background:var(--card);border:1px solid var(--border);color:var(--offwhite);
   border-radius:8px;padding:10px 12px;font-family:"Inter",sans-serif;font-size:13px;
   resize:vertical;min-height:62px}
@@ -865,6 +883,7 @@ async function loadPortal(){
     renderLoad(loadEntries);
     renderPracticePreview(practicePreview);
     renderGamesPreview(gamesPreview);
+    loadTreatmentBookings();
   }catch(e){
     console.error("player tab fetch failed:",player.tab,e);
     showError("Could not load data for "+player.name+". Check that a tab named \u201c"+player.tab+"\u201d exists in the Google Sheet.");
@@ -989,6 +1008,7 @@ function pick(btn){
   var group = btn.parentNode.querySelectorAll('[data-k="'+k+'"]');
   for(var i=0;i<group.length;i++) group[i].classList.remove("sel");
   btn.classList.add("sel");
+  if(k === "treatment") renderTrtSlots();
 }
 
 function openCheckIn(){
@@ -996,6 +1016,9 @@ function openCheckIn(){
   document.getElementById("ci-for").textContent = (window.PLAYER_NAME||"") + " · " + d;
   document.getElementById("ci-overlay").classList.add("show");
   document.body.style.overflow = "hidden";
+  /* fresh list of taken slots every time the sheet opens */
+  renderTrtSlots();
+  loadTreatmentBookings().then(renderTrtSlots);
 }
 
 function closeCheckIn(){
@@ -1018,6 +1041,18 @@ async function submitCheckIn(){
     msg.textContent = "Check-in isn't switched on yet — ask your coach.";
     return;
   }
+  var wantsTrt = CI.treatment === "Yes";
+  if(wantsTrt && TRT.ready){
+    var open = trtOpenSlots();
+    if(CI.treatment_time && open.indexOf(CI.treatment_time) < 0) CI.treatment_time = "";
+    if(!CI.treatment_time && open.length){
+      msg.className = "ci-msg bad";
+      msg.textContent = "Pick a time to be seen for treatment.";
+      var box = document.getElementById("ci-slots");
+      if(box && box.scrollIntoView) box.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+  }
 
   btn.disabled = true; btn.textContent = "Saving...";
   msg.className = "ci-msg"; msg.textContent = "";
@@ -1028,6 +1063,8 @@ async function submitCheckIn(){
     note: document.getElementById("ci-note").value || "",
     treatment: CI.treatment || "No"
   };
+  /* only sent once the endpoint can store it (TRT.ready) */
+  if(TRT.ready) payload.treatment_time = wantsTrt ? (CI.treatment_time || "") : "";
   METRICS.forEach(function(k){ payload[k] = CI[k]; });
 
   try{
@@ -1040,7 +1077,18 @@ async function submitCheckIn(){
       redirect: "follow"
     });
     var out = await res.json();
+    if(!out.ok && out.error === "slot_taken"){
+      /* someone booked it between opening the sheet and submitting */
+      TRT.taken = out.taken || TRT.taken;
+      CI.treatment_time = "";
+      renderTrtSlots();
+      btn.disabled = false; btn.textContent = "Submit check-in";
+      msg.className = "ci-msg bad";
+      msg.textContent = "That time has just been booked — pick another.";
+      return;
+    }
     if(!out.ok) throw new Error(out.error || "save failed");
+    if(TRT.ready) TRT.mine = out.treatment_time || "";
 
     msg.className = "ci-msg ok"; msg.textContent = "Saved. Thanks!";
     btn.textContent = "Saved";
@@ -1058,6 +1106,141 @@ async function submitCheckIn(){
   }
 }
 
+/* ============================================================
+   TREATMENT BOOKING (Oct 2026)
+   Ticking "Treatment: Yes" asks for a time to be seen. Slots come
+   from today's practice in the Master Schedule: the last one is
+   TRT_LOCK_MIN before practice starts, then every TRT_SLOT_GAP
+   minutes earlier, TRT_SLOT_COUNT in all — so an 11:00 practice
+   gives 10:15, 10:25, 10:35, 10:45. No practice, a game day, or a
+   practice whose time isn't set yet ("tbc"): no slots, but the
+   player can still ask for treatment.
+
+   One player per slot. The endpoint stores the time in WELLNESS LOG
+   and refuses a slot someone else already holds. Until the endpoint
+   answers ?treatment_bookings, TRT.ready stays false and the check-in
+   behaves exactly as it did before (plain Yes/No).
+   ============================================================ */
+const TRT_SLOT_COUNT = 4;
+const TRT_SLOT_GAP   = 10;
+const TRT_LOCK_MIN   = 15;
+
+var TRT = { ready:false, taken:[], mine:"" };
+
+function trtMin(t){
+  var m = /^(\d{1,2})[:.](\d{2})$/.exec(String(t||"").trim());
+  return m ? (+m[1])*60 + (+m[2]) : null;
+}
+function trtHHMM(min){
+  var h = Math.floor(min/60), m = min%60;
+  return (h<10?"0":"")+h+":"+(m<10?"0":"")+m;
+}
+
+/* -> { slots:["10:15",...], practice:"11:00", reason:"" }
+   reason is "game", "none", "tbc" or "nosched" when there are no slots */
+function treatmentSlotsFor(iso){
+  if(!SCHEDULE) return { slots:[], reason:"nosched" };
+  var evs = SCHEDULE.filter(function(e){ return e.iso === iso; });
+  if(evs.some(function(e){ return /game/i.test(e.cat); })) return { slots:[], reason:"game" };
+  var prac = evs.filter(function(e){ return /practice/i.test(e.cat); });
+  if(!prac.length) return { slots:[], reason:"none" };
+  var starts = prac.map(function(e){ return trtMin(e.start); })
+                   .filter(function(x){ return x !== null; });
+  if(!starts.length) return { slots:[], reason:"tbc" };
+  var first = Math.min.apply(null, starts);       /* two practices: the earlier one */
+  var slots = [];
+  for(var i = TRT_SLOT_COUNT-1; i >= 0; i--){
+    var t = first - TRT_LOCK_MIN - i*TRT_SLOT_GAP;
+    if(t >= 0) slots.push(trtHHMM(t));
+  }
+  return { slots:slots, practice:trtHHMM(first), reason:"" };
+}
+
+function trtNowMin(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); }
+
+/* slot state: "mine" | "taken" | "past" | "open" */
+function trtState(t){
+  if(t === TRT.mine) return "mine";
+  if(TRT.taken.indexOf(t) >= 0) return "taken";
+  if(trtMin(t) <= trtNowMin()) return "past";
+  return "open";
+}
+function trtOpenSlots(){
+  return treatmentSlotsFor(todayISO()).slots.filter(function(t){
+    var st = trtState(t); return st === "open" || st === "mine";
+  });
+}
+
+async function loadTreatmentBookings(){
+  if(CHECKIN_ENDPOINT.indexOf("http") !== 0) return;
+  try{
+    var res = await fetch(CHECKIN_ENDPOINT + "?treatment_bookings=" +
+                          encodeURIComponent(currentSlug()) + "&t=" + Date.now());
+    var out = await res.json();
+    if(out && out.ok && Array.isArray(out.taken)){
+      TRT.ready = true;
+      TRT.taken = out.taken;
+      TRT.mine  = out.mine || "";
+    }
+  }catch(e){
+    console.warn("treatment bookings unavailable:", e);
+  }
+  renderTrtBadge();
+}
+
+function renderTrtSlots(){
+  var box = document.getElementById("ci-slots");
+  if(!box) return;
+  if(CI.treatment !== "Yes" || !TRT.ready){ box.classList.remove("show"); return; }
+  box.classList.add("show");
+
+  var info = treatmentSlotsFor(todayISO());
+  if(!info.slots.length){
+    CI.treatment_time = "";
+    var why = {
+      game:    "It's a game day, so there are no treatment slots to book.",
+      none:    "There's no practice today, so there are no treatment slots to book.",
+      tbc:     "Today's practice time isn't confirmed yet, so there are no slots to book.",
+      nosched: "The schedule couldn't be loaded, so there are no slots to book right now."
+    }[info.reason] || "No treatment slots today.";
+    box.innerHTML = '<div class="ci-slots-none">' + why +
+                    ' Your treatment request still goes to the staff when you submit.</div>';
+    return;
+  }
+
+  /* keep their existing booking selected when they reopen to update */
+  if(!CI.treatment_time && TRT.mine && info.slots.indexOf(TRT.mine) >= 0) CI.treatment_time = TRT.mine;
+
+  var open = trtOpenSlots();
+  if(CI.treatment_time && open.indexOf(CI.treatment_time) < 0) CI.treatment_time = "";
+
+  var label = { taken:"Taken", past:"Gone", mine:"Yours", open:"Free" };
+  var btns = info.slots.map(function(t){
+    var st = trtState(t);
+    var sel = CI.treatment_time === t ? " sel" : "";
+    var dis = (st === "taken" || st === "past") ? " disabled" : "";
+    return '<button type="button" class="ci-opt' + sel + '" data-k="treatment_time" data-v="' + t +
+           '" onclick="pick(this)"' + dis + ' aria-label="' + to12h(t) + ', ' + label[st] + '">' +
+           to12h(t).replace(" ", "\u00a0") + '<small>' + label[st] + '</small></button>';
+  }).join("");
+
+  var hint = open.length
+    ? "Practice is at " + to12h(info.practice) + ". Pick a time to be seen."
+    : "Every slot before today's " + to12h(info.practice) +
+      " practice is booked or has passed. Your request still goes to the staff.";
+  box.innerHTML = '<div class="ci-slots-q">Time to be seen</div>' +
+                  '<div class="ci-slots-hint">' + hint + '</div>' +
+                  '<div class="ci-slot-grid">' + btns + '</div>';
+}
+
+/* "⚕ Treatment 10:45 AM" on the Daily Wellness card once booked */
+function renderTrtBadge(){
+  var el = document.getElementById("w-trt");
+  if(!el || !TRT.mine) return;
+  el.textContent = "\u2695 Treatment " + to12h(TRT.mine);
+  el.style.display = "block";
+}
+
 /* ---------- history ---------- */
 
 async function loadWellnessLog(slug){
@@ -1070,7 +1253,8 @@ async function loadWellnessLog(slug){
     /* Google blanks out the header cell for any column it decides is
        numeric or a date, so fall back to the canonical column order. */
     var LOG_COLS = ["timestamp","date","slug","name","sleep_quality","soreness",
-                    "mood","sleep_duration","stress","energy","treatment","note"];
+                    "mood","sleep_duration","stress","energy","treatment","note",
+                    "treatment_time"];
     var head = rows[0].map(function(h){ return h.toLowerCase().replace(/[^a-z_]/g,""); });
     var at = function(name){
       var i = head.indexOf(name);
@@ -1948,6 +2132,7 @@ loadPortal();
         <button type="button" class="ci-opt" data-k="treatment" data-v="No"  onclick="pick(this)">No</button>
         <button type="button" class="ci-opt" data-k="treatment" data-v="Yes" onclick="pick(this)">Yes</button>
       </div>
+      <div class="ci-slots" id="ci-slots" aria-live="polite"></div>
     </div>
 
     <div class="ci-row">
