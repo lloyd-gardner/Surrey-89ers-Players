@@ -322,38 +322,209 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .video-thumb.has-thumb::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,0.32)}
 .video-card{text-decoration:none}
 
-/* STRENGTH */
-.strength-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
-.strength-header{padding:14px 18px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;gap:12px}
-.strength-title{font-size:13px;font-weight:600}
-.strength-dates{font-size:10px;color:var(--muted);margin-top:2px}
-.strength-phase{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:4px;border:1px solid rgba(0,131,72,0.25);white-space:nowrap;flex-shrink:0}
-.strength-phase.mode-team{color:var(--green);background:var(--green-dim);border-color:rgba(0,131,72,0.25)}
-.strength-phase.mode-individual{color:var(--blue);background:var(--blue-dim);border-color:rgba(37,99,235,0.25)}
-.strength-days{display:flex;flex-direction:column}
-.strength-day{padding:14px 18px;border-top:1px solid var(--border-soft)}
-.strength-day:first-child{border-top:none}
-.day-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:10px}
-.ex-row{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.ex-row:last-child{border-bottom:none}
-.ex-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.ex-name{font-size:12px;color:var(--offwhite);font-weight:600}
-.ex-meta{font-size:10.5px;color:var(--muted);white-space:nowrap}
-.ex-notes{font-size:10.5px;color:var(--muted);margin-top:2px;font-style:italic}
-.set-grid{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
-.set-cell{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border-soft);border-radius:8px;padding:6px 11px;transition:border-color .15s,background .15s}
-.set-cell.logged{border-color:rgba(0,131,72,0.35);background:var(--green-dim)}
-.set-num{font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;color:var(--muted);width:13px;text-align:center;flex-shrink:0}
-.set-cell.logged .set-num{color:var(--green)}
-.wt-field{display:flex;align-items:baseline;gap:3px}
-.set-input{width:32px;background:transparent;border:none;border-bottom:1px solid var(--border-soft);color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600;text-align:right;padding:2px 0}
-.set-input:focus{outline:none;border-bottom-color:var(--green)}
-.wt-unit{font-size:9px;color:var(--muted);flex-shrink:0}
-.ex-log-btn{height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.2px;color:var(--green);background:rgba(0,131,72,0.1);border:1px solid rgba(0,131,72,0.25);border-radius:8px;padding:0 13px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
-.ex-log-btn:hover:not(:disabled){background:rgba(0,131,72,0.22)}
-.ex-log-btn:disabled{opacity:.5;cursor:default}
-.ex-log-btn.logged{background:var(--green);color:#fff;border-color:var(--green)}
-.strength-empty{padding:24px 18px;text-align:center;color:var(--muted);font-size:12px}
+/* S&C SESSIONS — Strength & Conditioning tab (sessions written in the Performance Hub) */
+.sx-strip{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin-bottom:16px;padding:2px 1px 4px;scroll-snap-type:x proximity}
+.sx-strip::-webkit-scrollbar{display:none}
+.sx-day{flex:1 0 168px;max-width:250px;text-align:left;background:var(--card);border:1px solid var(--border-soft);border-radius:10px;
+  padding:11px 14px;color:var(--offwhite);font-family:"Inter",sans-serif;cursor:pointer;scroll-snap-align:start;min-height:66px;transition:border-color .15s}
+.sx-day:hover{border-color:var(--border)}
+.sx-day.sel{border-color:#22a065;box-shadow:inset 0 0 0 1px #22a065}
+.sx-day.game{background:transparent;border-style:dashed;cursor:default}
+.sx-day-when{font-size:10px;font-weight:600;color:var(--muted)}
+.sx-day.today .sx-day-when{color:#4ade80}
+.sx-day-name{font-size:12.5px;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-day-st{font-size:10.5px;font-weight:600;margin-top:3px}
+.st-done{color:#4ade80}.st-part{color:var(--blue)}.st-next{color:var(--offwhite-mid)}.st-none{color:var(--muted)}.st-game{color:var(--amber)}
+
+.sx-head{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.sx-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#4ade80}
+.sx-eyebrow.later{color:var(--offwhite-mid)}
+.sx-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.sx-title{font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.3px}
+.sx-sub{font-size:12px;color:var(--offwhite-mid);margin-top:4px}
+.sx-gym-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:9px;flex-shrink:0;
+  background:var(--green-dim);border:1px solid rgba(0,131,72,.45);color:#4ade80;font-family:"Inter",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.sx-gym-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.sx-gym-btn:hover{background:rgba(0,131,72,.25)}
+.sx-prog{display:flex;align-items:center;gap:12px;margin-top:14px}
+.sx-bar{flex:1;height:6px;border-radius:3px;background:rgba(250,249,246,.08);overflow:hidden}
+.sx-bar i{display:block;height:100%;background:#22a065;border-radius:3px;transition:width .3s}
+.sx-pct{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:700;min-width:36px;text-align:right}
+.sx-notice{margin-top:12px;border:1px solid var(--border-soft);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--offwhite-mid);line-height:1.5}
+.sx-notice b{color:#4ade80;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;margin-right:8px}
+
+.sx-ex{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.sx-ex.cur{border-color:rgba(96,200,250,.45)}
+.sx-ex-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border-soft);flex-wrap:wrap}
+.sx-code{font-family:"Space Grotesk",sans-serif;font-size:11px;font-weight:700;color:#4ade80;background:var(--green-dim);border-radius:5px;padding:4px 7px}
+.sx-name{font-family:"Space Grotesk",sans-serif;font-size:16px;font-weight:700;flex:1;min-width:150px}
+.sx-chips{display:flex;gap:6px;flex-wrap:wrap}
+.sx-chip{font-size:10.5px;font-weight:600;padding:4px 9px;border-radius:5px;border:1px solid var(--border-soft);color:var(--offwhite-mid);white-space:nowrap}
+.sx-chip.mono{font-family:"Space Grotesk",sans-serif;color:var(--offwhite)}
+.sx-chip.done{color:#4ade80;background:var(--green-dim);border-color:rgba(0,131,72,.35)}
+.sx-chip.prog{color:var(--blue);background:var(--blue-dim);border-color:rgba(96,200,250,.3)}
+.sx-ex-body{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;padding:16px 18px}
+.sx-ex-body.solo{grid-template-columns:minmax(0,1fr)}
+.sx-media{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sx-vid{position:relative;aspect-ratio:16/10;border-radius:9px;background:#050a07 center/cover no-repeat;border:1px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;width:100%;padding:0;color:inherit}
+.sx-play{width:44px;height:44px;border-radius:50%;background:rgba(250,249,246,.9);display:flex;align-items:center;justify-content:center}
+.sx-play::after{content:"";border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:11px solid #080f0b;margin-left:3px}
+.sx-vid-tag{position:absolute;left:8px;bottom:8px;font-size:10px;font-weight:700;background:rgba(0,0,0,.7);color:var(--offwhite);padding:3px 7px;border-radius:4px}
+.sx-cues-h{font-size:9.5px;letter-spacing:2px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.sx-cues{padding-left:16px;font-size:12px;color:var(--offwhite-mid);line-height:1.65}
+.sx-target{display:flex;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--offwhite-mid);margin-bottom:10px}
+.sx-target b{color:var(--offwhite);font-weight:600}
+.sx-sets{border:1px solid var(--border-soft);border-radius:9px;overflow:hidden}
+.sx-row{display:grid;grid-template-columns:52px minmax(0,1fr) minmax(0,1fr) 44px;gap:10px;align-items:center;padding:7px 12px}
+.sx-row.one{grid-template-columns:52px minmax(0,1fr) 44px}
+.sx-row.hd{font-size:10px;color:var(--muted);font-weight:600;background:rgba(250,249,246,.02);padding-top:8px;padding-bottom:8px}
+.sx-row+.sx-row{border-top:1px solid var(--border-soft)}
+.sx-row.hd .r{text-align:right}
+.sx-setn{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px}
+.sx-setn.side{color:#4ade80}
+.sx-in{width:100%;height:40px;background:#0a140e;border:1px solid var(--border-soft);border-radius:7px;color:var(--offwhite);
+  font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:600;padding:0 12px;-moz-appearance:textfield}
+.sx-in::-webkit-outer-spin-button,.sx-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sx-in::placeholder{color:rgba(250,249,246,.34)}
+.sx-in:focus{outline:none;border-color:#22a065}
+.sx-tick{width:40px;height:40px;border-radius:8px;border:1px solid var(--border-soft);background:transparent;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sx-tick svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.5}
+.sx-tick:hover{border-color:var(--border);color:var(--offwhite)}
+.sx-tick.on{background:#22a065;border-color:#22a065;color:#fff}
+.sx-tick.busy{opacity:.55;cursor:wait}
+.sx-tick.err{border-color:var(--red);color:var(--red)}
+.sx-hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sx-hint.bad{color:var(--red)}
+.sx-timed{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:16px;align-items:start}
+.sx-timer{border:1px solid var(--border-soft);border-radius:10px;padding:14px;text-align:center}
+.sx-timer-h{font-size:9.5px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.sx-ring{width:124px;height:124px;margin:10px auto;position:relative}
+.sx-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.sx-ring circle{fill:none;stroke-width:8}
+.sx-ring .bg{stroke:rgba(250,249,246,.08)}
+.sx-ring .fg{stroke:#22a065;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.sx-ring-t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Space Grotesk",sans-serif;font-size:28px;font-weight:700}
+.sx-ring-t small{font-size:10.5px;color:var(--muted);font-weight:500;font-family:"Inter",sans-serif}
+.sx-timer-btns{display:flex;gap:8px}
+.sx-btn{height:44px;border-radius:9px;border:0;background:#22a065;color:#fff;font-weight:700;font-size:13px;padding:0 16px;cursor:pointer;font-family:"Inter",sans-serif;flex:1}
+.sx-btn.ghost{background:transparent;border:1px solid var(--border-soft);color:var(--offwhite);flex:0 0 auto}
+.sx-btn.ghost svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-3px}
+.sx-btn:disabled{opacity:.45;cursor:default}
+.sx-timer-note{font-size:10.5px;color:var(--muted);margin-top:8px}
+.sx-finish{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border-soft);
+  border-radius:12px;padding:14px 18px;font-size:12.5px;color:var(--offwhite-mid)}
+.sx-finish .sx-btn{flex:0 0 auto}
+.sx-empty{background:var(--card);border:1px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.sx-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1b2a21;border:1px solid var(--border);color:var(--offwhite);
+  font-size:12.5px;padding:10px 16px;border-radius:9px;z-index:950;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;max-width:calc(100% - 32px)}
+.sx-toast.bad{border-color:rgba(224,85,85,.5)}
+
+/* Gym mode: one exercise at a time, full screen (phone first) */
+.sx-ov{position:fixed;inset:0;z-index:450;background:#080f0b;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sx-ov.on{display:block}
+.sx-ov-in{width:100%;max-width:480px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:14px;min-height:100%}
+.sx-g-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sx-back{background:none;border:0;color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:16px;font-weight:700;display:flex;gap:4px;
+  align-items:center;min-height:44px;cursor:pointer;padding:0;max-width:40%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sx-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;flex-shrink:0}
+.sx-g-count{font-size:12px;color:var(--muted)}
+.sx-icon-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border-soft);background:transparent;color:var(--offwhite);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.sx-icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.sx-segs{display:flex;gap:6px}
+.sx-segs i{flex:1;height:4px;border-radius:2px;background:rgba(250,249,246,.1)}
+.sx-segs i.done{background:#22a065}.sx-segs i.cur{background:var(--blue)}
+.sx-g-vid{aspect-ratio:16/9}
+.sx-g-name{font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:700;line-height:1.2}
+.sx-g-name span{color:#4ade80;margin-right:6px}
+.sx-g-sub{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.sx-g-target{font-size:12.5px;color:var(--offwhite-mid)}
+.sx-g-target b{color:var(--offwhite)}
+.sx-rest{display:flex;align-items:center;gap:10px;background:rgba(96,200,250,.1);border:1px solid rgba(96,200,250,.35);border-radius:12px;padding:10px 12px}
+.sx-rest-l{color:var(--blue);font-weight:700;font-size:12px}
+.sx-rest-t{font-family:"Space Grotesk",sans-serif;font-size:28px;font-weight:700;flex:1;font-variant-numeric:tabular-nums}
+.sx-rest button{height:44px;padding:0 14px;border-radius:9px;border:1px solid rgba(96,200,250,.35);background:rgba(96,200,250,.12);color:var(--blue);font-weight:700;font-size:13px;cursor:pointer;font-family:"Inter",sans-serif}
+.sx-rest button.solid{background:rgba(96,200,250,.25);color:var(--offwhite)}
+.sx-setcard{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;padding:14px}
+.sx-setcard-h{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;margin-bottom:10px}
+.sx-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sx-steps.one{grid-template-columns:1fr}
+.sx-step-l{font-size:11px;color:var(--muted);margin-bottom:5px}
+.sx-step{display:flex;align-items:center;border:1px solid var(--border-soft);border-radius:10px;height:54px;background:#0a140e}
+.sx-step button{width:46px;height:100%;background:none;border:0;color:var(--offwhite);font-size:22px;cursor:pointer;flex-shrink:0;font-family:"Inter",sans-serif}
+.sx-step input{flex:1;min-width:0;width:100%;text-align:center;background:none;border:0;color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:22px;font-weight:700;-moz-appearance:textfield}
+.sx-step input::-webkit-outer-spin-button,.sx-step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.sx-step input:focus{outline:none}
+.sx-step input::placeholder{color:rgba(250,249,246,.34)}
+.sx-big{width:100%;height:54px;margin-top:12px;border-radius:11px;border:0;background:#22a065;color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:"Inter",sans-serif}
+.sx-big:disabled{opacity:.5;cursor:wait}
+.sx-big.ghost{background:transparent;border:1px solid var(--border-soft);color:var(--offwhite)}
+.sx-g-log{display:flex;flex-direction:column}
+.sx-g-log div{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--border-soft);font-size:12.5px;color:var(--offwhite-mid)}
+.sx-g-log b{font-family:"Space Grotesk",sans-serif;color:var(--offwhite);font-size:13.5px}
+.sx-g-log em{font-style:normal;color:#4ade80;font-weight:600;font-size:12px}
+.sx-g-log em.bad{color:var(--red)}
+.sx-g-timer .sx-ring{width:150px;height:150px}
+.sx-next{margin-top:auto;border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+  background:none;color:var(--offwhite);font-family:"Inter",sans-serif;text-align:left;cursor:pointer;width:100%}
+.sx-next b{font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-right:8px}
+.sx-next span:last-child{font-family:"Space Grotesk",sans-serif;font-weight:700;white-space:nowrap}
+.sx-menu{display:none;position:fixed;inset:0;z-index:460;background:rgba(0,0,0,.6);align-items:flex-end;justify-content:center}
+.sx-menu.on{display:flex}
+.sx-menu-in{background:#0f1f16;border:1px solid var(--border);border-radius:16px 16px 0 0;width:100%;max-width:480px;padding:14px 14px max(18px,env(safe-area-inset-bottom))}
+.sx-menu-h{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:4px 4px 10px}
+.sx-menu button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:48px;background:none;border:0;border-top:1px solid var(--border-soft);
+  color:var(--offwhite);font-family:"Inter",sans-serif;font-size:14px;text-align:left;padding:0 4px;cursor:pointer}
+.sx-menu button span:last-child{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.sx-menu button.cur span:first-child{color:var(--blue);font-weight:700}
+
+/* Session complete */
+.sx-done-top{display:flex;align-items:center;gap:14px;padding-top:6px}
+.sx-done-ic{width:52px;height:52px;border-radius:50%;background:#22a065;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sx-done-ic svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:3}
+.sx-done-t{font-family:"Space Grotesk",sans-serif;font-size:24px;font-weight:700}
+.sx-done-s{font-size:12.5px;color:var(--muted);margin-top:2px}
+.sx-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sx-tile{border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px;background:var(--card)}
+.sx-tile div{font-size:11px;color:var(--muted)}
+.sx-tile b{display:block;font-family:"Space Grotesk",sans-serif;font-size:20px;margin-top:4px}
+.sx-best{display:flex;gap:12px;align-items:center;background:var(--green-dim);border:1px solid rgba(0,131,72,.45);border-radius:12px;padding:12px 14px}
+.sx-best svg{width:20px;height:20px;stroke:#4ade80;fill:none;stroke-width:2;flex-shrink:0}
+.sx-best b{display:block;color:#bbf7d0;font-size:13.5px}
+.sx-best span{font-size:12px;color:var(--offwhite-mid)}
+.sx-q{font-size:14.5px;font-weight:700}
+.sx-q small{font-size:11.5px;color:var(--muted);font-weight:500}
+.sx-rpe{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.sx-rpe button{height:52px;border-radius:10px;border:1px solid var(--border-soft);background:var(--card);color:var(--offwhite);font-family:"Space Grotesk",sans-serif;font-size:17px;font-weight:700;cursor:pointer}
+.sx-rpe button.on{background:#22a065;border-color:#22a065;color:#fff}
+.sx-rpe-d{font-size:12px;color:var(--offwhite-mid);margin-top:8px;min-height:16px}
+.sx-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sx-tags button{min-height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--border-soft);background:transparent;color:var(--offwhite);font-size:12.5px;font-weight:600;cursor:pointer;font-family:"Inter",sans-serif}
+.sx-tags button.on{background:var(--green-dim);border-color:rgba(0,131,72,.6);color:#bbf7d0}
+.sx-note{width:100%;min-height:76px;margin-top:10px;background:var(--card);border:1px solid var(--border-soft);border-radius:10px;color:var(--offwhite);
+  font-family:"Inter",sans-serif;font-size:14px;padding:10px 12px;resize:vertical}
+.sx-note:focus{outline:none;border-color:#22a065}
+.sx-who{font-size:11px;color:var(--muted);line-height:1.5}
+.sx-link{background:none;border:0;color:var(--offwhite);font-weight:600;font-size:13px;min-height:44px;cursor:pointer;font-family:"Inter",sans-serif}
+
+@media(max-width:720px){
+  .sx-title-row{flex-direction:column;align-items:stretch}
+  .sx-gym-btn{height:48px;font-size:14px}
+  .sx-ex-head{padding:12px 14px;gap:8px 10px}
+  .sx-ex-body{grid-template-columns:minmax(0,1fr);padding:14px;gap:14px}
+  .sx-ex-body .sx-vid{aspect-ratio:auto;height:46px;justify-content:flex-start;padding-left:10px}
+  .sx-ex-body .sx-vid .sx-play{width:28px;height:28px}
+  .sx-ex-body .sx-vid .sx-play::after{border-top-width:5px;border-bottom-width:5px;border-left-width:8px}
+  .sx-ex-body .sx-vid .sx-vid-tag{position:static;margin-left:10px;background:none;font-size:12px}
+  .sx-timed{grid-template-columns:minmax(0,1fr)}
+  .sx-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr) 42px;gap:8px;padding:7px 10px}
+  .sx-row.one{grid-template-columns:40px minmax(0,1fr) 42px}
+  .sx-finish{flex-direction:column;align-items:stretch}
+  .sx-head{padding:16px}
+}
 
 /* NOTES */
 .notes-card{background:var(--card);border:1px solid var(--border-soft);border-radius:10px;padding:16px}
@@ -527,19 +698,11 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
     </div>
 
     <div class="tab-panel" id="tab-strength" style="display:none">
-      <!-- STRENGTH -->
+      <!-- S&C SESSIONS (written by the S&C coach in the Performance Hub) -->
       <div class="section" style="margin-top:0">
-        <div class="section-header"><div class="section-title">Strength Programme</div></div>
-        <div class="strength-card">
-          <div class="strength-header">
-            <div>
-              <div class="strength-title" id="strength-block"></div>
-              <div class="strength-dates" id="strength-dates"></div>
-            </div>
-            <div class="strength-phase" id="strength-phase"></div>
-          </div>
-          <div class="strength-days" id="strength-days"></div>
-        </div>
+        <div class="section-header"><div class="section-title">Your S&amp;C Sessions</div></div>
+        <div class="sx-strip" id="sx-strip"></div>
+        <div id="sx-main"><div class="sx-empty">Loading your sessions…</div></div>
       </div>
     </div>
   </div>
@@ -571,16 +734,13 @@ const CHECKIN_ENDPOINT = "https://script.google.com/macros/s/AKfycbx-xVqT4EUY_yg
 const LOG_TAB = "WELLNESS LOG";
 const METRICS = ["sleep_quality","sleep_duration","soreness","mood","stress","energy"];
 
-/* --- Strength programme ---
-   The PLAN (what to do) lives on a separate sheet the S&C coach owns —
-   STRENGTH_SHEET_ID, read via strengthTabURL(). Replace that ID once,
-   after creating/copying that sheet — see the README tab inside it.
-   The LOG (what was actually done) stays on the main Player Portals
-   sheet (SHEET_ID, above) in a "STRENGTH LOG" tab, same place/pattern
-   as WELLNESS LOG — read via the existing tabURL(), not strengthTabURL(). */
+/* --- S&C sessions ---
+   The PLAN lives on the S&C coach's Strength Program sheet
+   (STRENGTH_SHEET_ID): tabs SESSIONS, SESSION EXERCISES and EXERCISES,
+   written from the Performance Hub. The older ASSIGNMENT and
+   STRENGTH PROGRAM tabs are no longer read. The LOG (what was actually
+   done) stays on the main Player Portals sheet in STRENGTH LOG. */
 const STRENGTH_SHEET_ID = "1oeX8mJsqdCFB2u-DXjBnpRb7SLiYyml2x133sn3vXqg";
-const STRENGTH_ASSIGNMENT_TAB = "ASSIGNMENT";
-const STRENGTH_TEAM_TAB = "STRENGTH PROGRAM";
 const STRENGTH_LOG_TAB = "STRENGTH LOG"; // tab name on the MAIN sheet
 
 /* --- Practice Sessions / Games & Scouting previews (Basketball Development tab) ---
@@ -865,11 +1025,11 @@ async function loadPortal(){
   if(gameLink) gameLink.href = "/game-videos?p="+encodeURIComponent(slug);
 
   try{
-    const [res, logEntries, sched, strength, loadEntries, practicePreview, gamesPreview] = await Promise.all([
+    const [res, logEntries, sched, , loadEntries, practicePreview, gamesPreview] = await Promise.all([
       fetch(tabURL(player.tab)),
       loadWellnessLog(slug),
       loadSchedule(),
-      loadStrengthData(slug, player.name),
+      sxLoad(slug, player.name),
       loadLoadLog(slug),
       loadPracticePreview(),
       loadGamesPreview()
@@ -879,7 +1039,7 @@ async function loadPortal(){
     LOG_ENTRIES = logEntries;
     const rows=parseCSV(await res.text());
     render(rows,player);
-    renderStrength(strength, slug, player.name);
+    sxRender();
     renderLoad(loadEntries);
     renderPracticePreview(practicePreview);
     renderGamesPreview(gamesPreview);
@@ -976,7 +1136,7 @@ function render(rows,player){
     }).join("");
   }
 
-  // STRENGTH is loaded from its own sheet — see loadStrengthData/renderStrength below.
+  // S&C sessions load from their own sheet — see sxLoad / sxRender below.
 
   // NOTES
   const noteRows=rows.filter(r=>clean(r[0])==="NOTE"&&clean(r[3])&&!clean(r[3]).includes("Add your first"));
@@ -1407,176 +1567,730 @@ function renderLoad(entries){
 }
 
 /* ============================================================
-   STRENGTH PROGRAMME — reads a SEPARATE sheet (STRENGTH_SHEET_ID),
-   owned by the S&C coach. Three tabs:
-     ASSIGNMENT      slug | name | mode | block | start_date | end_date | note
-     STRENGTH PROGRAM  block | day | code | exercise | tempo | rest | sets | reps | notes   (the team default)
-     <Player Name>     same columns as STRENGTH PROGRAM               (individual plan, only if assigned)
-     STRENGTH LOG     append-only, one row per set a player logs
-   No day/set/rep count is fixed — whatever's on the sheet is what
-   renders, so the S&C coach can change the plan without a deploy.
+   S&C SESSIONS — the Strength & Conditioning tab.
+   The S&C coach writes sessions in the Performance Hub. They live on
+   the Strength Program sheet (STRENGTH_SHEET_ID), read by tab name:
+     SESSIONS           session_id | name | date | start_time | location | phase |
+                        status | assign_mode | players | est_min | series_id | archived | updated_at
+     SESSION EXERCISES  session_id | order | block | code | exercise_id | exercise | measure |
+                        sets | amount | each_side | load_type | load | rest_s | video_url | cues
+     EXERCISES          the library: fills in a demo video or cues a session row leaves blank
+   A player sees every session that is published, not archived and
+   lists their slug in `players`. Any of them can be done and logged on
+   any day; the date planned is shown, the log keeps the day it was done.
+
+   Logging goes to STRENGTH LOG on the main sheet through the same
+   endpoint as before (type "strength"), ONE ROW PER SET:
+     mode "session" · block = session_id · day = session name · code ·
+     exercise · sets = set number · reps = reps done (seconds for a hold) ·
+     weights_kg = that set's weight · note = side, for each-side holds
+   "Send to coach" adds one row with code "SESSION" and no exercise:
+   rpe = the player's 1–10 rating, note = their tags and note.
+   Nothing new is read or written: the Strength Program sheet was
+   already read by this page, STRENGTH LOG already written to.
    ============================================================ */
 
-const STRENGTH_COLS = ["block","day","code","exercise","tempo","rest","sets","reps","notes"];
-const STRENGTH_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","sets","reps","weights_kg","rpe","note"];
+const SX_TABS = { sessions:"SESSIONS", rows:"SESSION EXERCISES", lib:"EXERCISES" };
+const SX_SESSION_COLS = ["session_id","name","date","start_time","location","phase","status","assign_mode","players","est_min","series_id","archived","updated_at"];
+const SX_ROW_COLS = ["session_id","order","block","code","exercise_id","exercise","measure","sets","amount","each_side","load_type","load","rest_s","video_url","cues"];
+const SX_LIB_COLS = ["exercise_id","name","type","tags","measure","sets","amount","each_side","load_type","load","rest_s","video_url","cues","archived","updated_at"];
+const SX_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","sets","reps","weights_kg","rpe","note"];
+const SX_TAGS = ["Felt great","Low energy","Legs heavy","Tight somewhere","Pain — talk to me"];
+const SX_RPE_TEXT = ["","Very easy","Easy","Easy — plenty left","Moderate","Moderate — about 5 reps left",
+  "Fairly hard — about 4 reps left","Hard — about 3 reps left","Very hard — about 2 reps left",
+  "Very hard — 1 rep left","Max — nothing left"];
 
-function colIndex(headerRow, canonical){
-  const head = headerRow.map(h=>h.toLowerCase().replace(/[^a-z_]/g,""));
-  const at = {};
-  canonical.forEach(c=>{
-    const i = head.indexOf(c);
-    at[c] = i>=0 ? i : canonical.indexOf(c);
+const SX = {
+  ok:false, slug:"", name:"", sessions:[], rows:{}, lib:{}, log:[],
+  sel:"", lines:{}, draft:{}, sent:{}, firstTs:{},
+  gym:{on:false, ex:0, line:0}, rest:{left:0, total:0, t:null},
+  hold:{key:"", left:0, total:0, t:null, running:false},
+  done:{rpe:0, tags:{}, note:"", sending:false}, wake:null
+};
+
+/* ---------- small helpers ---------- */
+function sxEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
+function sxTrue(v){ return v===true || String(v).trim().toUpperCase()==="TRUE"; }
+function sxNum(v){ const n=parseFloat(String(v==null?"":v).replace(",",".")); return isNaN(n)?null:n; }
+function sxFmtKg(n){ if(n==null) return ""; return Number.isInteger(n)? String(n) : String(Math.round(n*10)/10); }
+function sxRound25(n){ return Math.round(n/2.5)*2.5; }
+function sxParseISO(s){
+  s=String(s||"").trim();
+  let m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s); if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s); if(m) return new Date(+m[3],+m[2]-1,+m[1]);
+  return null;
+}
+function sxISO(d){ const z=n=>(n<10?"0":"")+n; return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()); }
+function sxNormDate(s){ const d=sxParseISO(s); return d? sxISO(d) : ""; }
+const SX_WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], SX_WDL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const SX_MO=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function sxPretty(iso, long){
+  const d=sxParseISO(iso); if(!d) return "";
+  return (long?SX_WDL:SX_WD)[d.getDay()]+" "+d.getDate()+" "+SX_MO[d.getMonth()];
+}
+function sxMonday(iso){ const d=sxParseISO(iso); d.setDate(d.getDate()-((d.getDay()+6)%7)); return sxISO(d); }
+function sxAddDays(iso,n){ const d=sxParseISO(iso); d.setDate(d.getDate()+n); return sxISO(d); }
+function sxClock(sec){ sec=Math.max(0,Math.ceil(sec)); return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0"); }
+
+/* Proper CSV reader: cues and notes can hold commas, quotes and line breaks */
+function sxParseCSV(text){
+  const rows=[]; let row=[], cur="", q=false;
+  text=String(text||"").replace(/\r\n?/g,"\n");
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c==='"') q=true;
+    else if(c===","){ row.push(cur); cur=""; }
+    else if(c==="\n"){ row.push(cur); rows.push(row); row=[]; cur=""; }
+    else cur+=c;
+  }
+  if(cur!=="" || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!==""));
+}
+/* Rows as objects, columns found by header name with the known order as
+   the fallback. `idCol` guards against a wrong tab name: Google answers
+   with the sheet's FIRST tab, so a tab only counts if its id column heads it. */
+async function sxRead(url, cols, idCol){
+  const res=await fetch(url);
+  if(!res.ok) throw new Error("http "+res.status);
+  const rows=sxParseCSV(await res.text());
+  if(rows.length<1) return [];
+  const head=rows[0].map(h=>String(h).toLowerCase().replace(/[^a-z_]/g,""));
+  if(idCol && head.indexOf(idCol)<0) return null;
+  const at={}; cols.forEach((c,n)=>{ const f=head.indexOf(c); at[c]= f>=0 ? f : n; });
+  return rows.slice(1).map(r=>{ const o={}; cols.forEach(c=>o[c]=String(r[at[c]]==null?"":r[at[c]]).trim()); return o; });
+}
+
+/* ---------- load ---------- */
+async function sxLoad(slug, playerName){
+  SX.slug=slug; SX.name=playerName||"";
+  try{
+    const [ses, rows, lib, log] = await Promise.all([
+      sxRead(strengthTabURL(SX_TABS.sessions), SX_SESSION_COLS, "session_id"),
+      sxRead(strengthTabURL(SX_TABS.rows), SX_ROW_COLS, "session_id"),
+      sxRead(strengthTabURL(SX_TABS.lib), SX_LIB_COLS, "exercise_id").catch(()=>[]),
+      sxRead(tabURL(STRENGTH_LOG_TAB), SX_LOG_COLS).catch(e=>{ console.error("STRENGTH LOG not readable:",e); return []; })
+    ]);
+    if(ses===null || rows===null){ SX.err="setup"; return; }
+    SX.lib={}; (lib||[]).forEach(x=>{ if(x.exercise_id) SX.lib[x.exercise_id]=x; });
+    SX.rows={};
+    rows.forEach(r=>{ if(r.session_id) (SX.rows[r.session_id]=SX.rows[r.session_id]||[]).push(r); });
+    Object.keys(SX.rows).forEach(k=>SX.rows[k].sort((a,b)=>(sxNum(a.order)||0)-(sxNum(b.order)||0)));
+    SX.sessions = ses.filter(s=>{
+      if(!s.session_id || sxTrue(s.archived) || s.status.toLowerCase()!=="published") return false;
+      if(!(SX.rows[s.session_id]||[]).length) return false;
+      const list=s.players.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+      return list.length ? list.indexOf(slug)>=0 : s.assign_mode.toLowerCase()==="squad";
+    }).map(s=>Object.assign({}, s, {date:sxNormDate(s.date)}))
+      .sort((a,b)=>((a.date||"9999")+a.start_time).localeCompare((b.date||"9999")+b.start_time));
+    SX.log = log.filter(r=>r.slug.toLowerCase()===slug).map(r=>Object.assign(r,{date:sxNormDate(r.date)||String(r.date).slice(0,10)}));
+    sxRestore();
+    SX.ok=true;
+  }catch(e){
+    console.error("S&C sessions could not be read:", e);
+    SX.err="read";
+  }
+}
+
+/* Logged sets for each session, from STRENGTH LOG (latest row wins) */
+function sxRestore(){
+  SX.lines={}; SX.sent={}; SX.firstTs={};
+  const ids={}; SX.sessions.forEach(s=>ids[s.session_id]=1);
+  const today=todayISO();
+  SX.log.forEach(r=>{
+    if(r.mode!=="session" || !ids[r.block]) return;
+    if(r.code==="SESSION"){ SX.sent[r.block]={rpe:r.rpe, note:r.note, date:r.date}; return; }
+    const n=parseInt(r.sets,10); if(!n) return;
+    SX.lines[r.block+"|"+r.code+"|"+n]={ w:r.weights_kg, r:r.reps, date:r.date, state:"ok" };
+    if(r.date===today){
+      const t=sxParseTs(r.timestamp);
+      if(t && (!SX.firstTs[r.block] || t<SX.firstTs[r.block])) SX.firstTs[r.block]=t;
+    }
   });
-  return at;
+}
+function sxParseTs(s){
+  s=String(s||"");
+  let m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(s);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)).getTime();
+  m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(s);
+  return m? new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5],+(m[6]||0)).getTime() : null;
 }
 
-async function loadStrengthData(slug, playerName){
-  const out = { mode:"team", block:"", startDate:"", endDate:"", note:"", days:{}, dayOrder:[], loggedToday:{} };
-  try{
-    // 1. Who's on what
-    const aRes = await fetch(strengthTabURL(STRENGTH_ASSIGNMENT_TAB));
-    if(aRes.ok){
-      const aRows = parseCSV(await aRes.text()).filter(r=>r.some(c=>c!==""));
-      if(aRows.length>1){
-        const at = colIndex(aRows[0], ["slug","name","mode","block","start_date","end_date","note"]);
-        const mine = aRows.slice(1).find(r=>(r[at.slug]||"").toLowerCase().trim()===slug);
-        if(mine){
-          out.mode = (mine[at.mode]||"team").toLowerCase().trim()==="individual" ? "individual" : "team";
-          out.block = mine[at.block]||"";
-          out.startDate = mine[at.start_date]||"";
-          out.endDate = mine[at.end_date]||"";
-          out.note = mine[at.note]||"";
-        }
-      }
+/* ---------- the session model ---------- */
+function sxSession(sid){ return SX.sessions.find(s=>s.session_id===sid); }
+function sxExercises(sid){
+  return (SX.rows[sid]||[]).map(r=>{
+    const lib=SX.lib[r.exercise_id]||{};
+    const time=(r.measure||lib.measure||"reps").toLowerCase()==="time";
+    const each=sxTrue(r.each_side);
+    const sets=Math.max(1, parseInt(r.sets,10)||1);
+    const cues=(r.cues||lib.cues||"").split(/\n|•|;/).map(c=>c.replace(/^[-\s]+/,"").trim()).filter(Boolean);
+    const lines=[];
+    for(let n=1;n<=sets;n++){
+      if(time && each){
+        lines.push({n:lines.length+1, set:n, side:"Left"});
+        lines.push({n:lines.length+1, set:n, side:"Right"});
+      }else lines.push({n:n, set:n, side:""});
     }
-  }catch(e){ console.error("STRENGTH ASSIGNMENT not readable — defaulting to team programme:", e); }
-
-  // 2. The actual plan: team default, or the player's own named tab
-  const planTab = out.mode==="individual" ? playerName : STRENGTH_TEAM_TAB;
-  try{
-    const pRes = await fetch(strengthTabURL(planTab));
-    if(pRes.ok){
-      const pRows = parseCSV(await pRes.text()).filter(r=>r.some(c=>c!==""));
-      if(pRows.length>1){
-        const pt = colIndex(pRows[0], STRENGTH_COLS);
-        let plan = pRows.slice(1).map(r=>({
-          block:r[pt.block]||"", day:r[pt.day]||"", code:r[pt.code]||"",
-          exercise:r[pt.exercise]||"", tempo:r[pt.tempo]||"", rest:r[pt.rest]||"",
-          sets:parseInt(r[pt.sets])||0, reps:r[pt.reps]||"", notes:r[pt.notes]||""
-        })).filter(e=>e.exercise);
-        // If a block is named in ASSIGNMENT and appears on the sheet, show just that block.
-        if(out.block && plan.some(e=>e.block===out.block)){
-          plan = plan.filter(e=>e.block===out.block);
-        }
-        plan.forEach(e=>{
-          if(!out.days[e.day]){ out.days[e.day]=[]; out.dayOrder.push(e.day); }
-          out.days[e.day].push(e);
-        });
-      }
-    }
-  }catch(e){ console.error("Strength plan tab not readable:", planTab, e); }
-
-  // 3. What's already been logged today, so the page survives a refresh mid-session
-  try{
-    // The log of sets actually performed lives on the MAIN Player Portals
-    // sheet (same one saveWellness writes to), not the separate Strength
-    // Program sheet — the S&C coach's sheet only holds the plan.
-    const lRes = await fetch(tabURL(STRENGTH_LOG_TAB));
-    if(lRes.ok){
-      const lRows = parseCSV(await lRes.text()).filter(r=>r.some(c=>c!==""));
-      if(lRows.length>1){
-        const lt = colIndex(lRows[0], STRENGTH_LOG_COLS);
-        const today = new Date().toISOString().slice(0,10);
-        lRows.slice(1).forEach(r=>{
-          if((r[lt.slug]||"").toLowerCase().trim()!==slug) return;
-          if((r[lt.date]||"")!==today) return;
-          // One row per exercise now (not per set) — key by day+code, and
-          // split the weights list back into per-set values in set order.
-          const key = [r[lt.day],r[lt.code]].join("|");
-          out.loggedToday[key] = {
-            reps: r[lt.reps]||"",
-            weights: (r[lt.weights_kg]||"").split(",").map(w=>w.trim())
-          };
-        });
-      }
-    }
-  }catch(e){ console.error("STRENGTH LOG not readable yet (normal before the first set is logged):", e); }
-
-  return out;
+    return { code:r.code||r.block||String(r.order), exercise:r.exercise||lib.name||"Exercise", time:time, each:each,
+      sets:sets, amount:r.amount, loadType:(r.load_type||"").toLowerCase(), load:r.load,
+      rest:sxNum(r.rest_s)||0, video:r.video_url||lib.video_url||"", cues:cues, lines:lines };
+  });
+}
+function sxKey(sid,x,l){ return sid+"|"+x.code+"|"+l.n; }
+function sxCount(sid){
+  let got=0, all=0;
+  sxExercises(sid).forEach(x=>x.lines.forEach(l=>{ all++; const v=SX.lines[sxKey(sid,x,l)]; if(v && v.state==="ok") got++; }));
+  return {got:got, all:all};
+}
+function sxExState(sid,x){
+  const got=x.lines.filter(l=>{ const v=SX.lines[sxKey(sid,x,l)]; return v && v.state==="ok"; }).length;
+  return got>=x.lines.length ? "done" : got ? "prog" : "none";
+}
+function sxPrescription(x){
+  return x.sets+" × "+(x.amount||"?")+(x.time?" s":"")+(x.each?" each side":"");
 }
 
-function renderStrength(s, slug, playerName){
-  const badge = document.getElementById("strength-phase");
-  const dates = document.getElementById("strength-dates");
-  document.getElementById("strength-block").textContent = s.block || (s.mode==="team" ? "Team Programme" : "Individual Programme");
-  badge.textContent = s.mode==="individual" ? "Individual Programme" : "Team Programme";
-  badge.className = "strength-phase " + (s.mode==="individual" ? "mode-individual" : "mode-team");
-  dates.textContent = (s.startDate||s.endDate) ? ("Current phase: "+(s.startDate||"?")+" \u2192 "+(s.endDate||"?")) : "";
+/* Player's own history for an exercise: { date: [{w,r}] } before today */
+function sxHistory(name){
+  const key=String(name).toLowerCase().trim(), today=todayISO(), by={};
+  const seen={};
+  SX.log.forEach(r=>{
+    if(!r.exercise || r.exercise.toLowerCase().trim()!==key || !r.date || r.date>=today) return;
+    const list=by[r.date]=by[r.date]||[];
+    const ws=String(r.weights_kg||"").split(",").map(s=>s.trim());
+    const rs=String(r.reps||"").split(",").map(s=>s.trim());
+    if(r.mode==="session"){
+      const k=r.date+"|"+r.block+"|"+r.sets+"|"+r.note;
+      const v={w:sxNum(ws[0]), r:sxNum(rs[0]), n:parseInt(r.sets,10)||0};
+      if(seen[k]!=null){ list[seen[k]]=v; } else { seen[k]=list.length; list.push(v); }
+    }else if(ws.length>1){
+      ws.forEach((w,i)=>list.push({w:sxNum(w), r:sxNum(rs[i]!=null&&rs[i]!==""?rs[i]:rs[0]), n:i+1}));
+    }else{
+      list.push({w:sxNum(ws[0]), r:sxNum(rs[0]), n:list.length+1});
+    }
+  });
+  return by;
+}
+function sxLastTime(x){
+  const h=sxHistory(x.exercise), dates=Object.keys(h).sort();
+  if(!dates.length) return null;
+  const d=dates[dates.length-1], sets=h[d].slice().sort((a,b)=>a.n-b.n);
+  const withW=sets.filter(s=>s.w);
+  let text;
+  if(x.time){ const s=sets.find(s=>s.r)||{}; text=(s.r||"?")+" s"+(x.each?" each side":""); }
+  else if(withW.length){ const top=withW.reduce((a,b)=>b.w>a.w?b:a); text=sxFmtKg(top.w)+" kg × "+(top.r||"?"); }
+  else { const s=sets.find(s=>s.r)||{}; text=(s.r||"?")+" reps"; }
+  return { date:d, sets:sets, text:text };
+}
+function sxBestBefore(x){
+  let best=null; const h=sxHistory(x.exercise);
+  Object.keys(h).forEach(d=>h[d].forEach(s=>{ if(s.w && (best==null || s.w>best)) best=s.w; }));
+  return best;
+}
+/* Estimated 1RM from the last 16 weeks (Epley, sets of 10 or fewer) */
+function sxE1RM(x){
+  const h=sxHistory(x.exercise), from=sxAddDays(todayISO(),-112); let best=0;
+  Object.keys(h).forEach(d=>{ if(d<from) return; h[d].forEach(s=>{ if(s.w && s.r && s.r<=10) best=Math.max(best, s.w*(1+s.r/30)); }); });
+  return best||null;
+}
+/* Target text and the weight to suggest for each set */
+function sxTarget(x){
+  const nums=String(x.load||"").match(/\d+(\.\d+)?/g)||[];
+  const lo=nums.length?parseFloat(nums[0]):null, hi=nums.length>1?parseFloat(nums[1]):null;
+  if(x.loadType==="bw") return { text:"Bodyweight", kg:null };
+  if(x.loadType==="kg" && lo!=null) return { text:sxFmtKg(lo)+(hi!=null?"–"+sxFmtKg(hi):"")+" kg", kg:lo };
+  if(x.loadType==="pct" && lo!=null){
+    const rm=sxE1RM(x), pct=lo+(hi!=null?"–"+hi:"")+"% 1RM";
+    if(!rm) return { text:pct, kg:null };
+    const a=sxRound25(rm*lo/100), b=hi!=null?sxRound25(rm*hi/100):null;
+    return { text:pct+" · about "+sxFmtKg(a)+(b!=null&&b!==a?"–"+sxFmtKg(b):"")+" kg", kg:a };
+  }
+  if(x.loadType==="rpe" && lo!=null){
+    const rir=Math.max(0,Math.round(10-lo));
+    return { text:"RPE "+lo+" — "+(rir?"about "+rir+" rep"+(rir===1?"":"s")+" left":"nothing left"), kg:null };
+  }
+  return { text:"", kg:null };
+}
+/* Grey suggestion for a set: the target weight first, then last time's */
+function sxGhost(x, l, tgt, last){
+  let w="", r=x.amount||"";
+  const ls=last && last.sets.length ? (last.sets[l.n-1]||last.sets[last.sets.length-1]) : null;
+  if(!x.time){
+    if(tgt.kg!=null) w=sxFmtKg(tgt.kg);
+    else if(ls && ls.w) w=sxFmtKg(ls.w);
+  }
+  return {w:w, r:String(r)};
+}
 
-  const wrap = document.getElementById("strength-days");
-  if(!s.dayOrder.length){
-    wrap.innerHTML = `<div class="strength-empty">No strength programme set up yet — check back once your S&C coach has added one.</div>`;
+/* ---------- which session ---------- */
+function sxStripList(){
+  const today=todayISO(), from=sxAddDays(today,-7);
+  let list=SX.sessions.filter(s=>!s.date || s.date>=from);
+  if(!list.length) list=SX.sessions.slice(-3);
+  return list;
+}
+function sxDefaultSel(){
+  const today=todayISO(), list=SX.sessions;
+  const todays=list.filter(s=>s.date===today);
+  const open=todays.find(s=>{ const c=sxCount(s.session_id); return c.got<c.all; });
+  if(open) return open.session_id;
+  if(todays.length) return todays[0].session_id;
+  const next=list.find(s=>s.date>today); if(next) return next.session_id;
+  const undated=list.find(s=>!s.date); if(undated) return undated.session_id;
+  return list.length? list[list.length-1].session_id : "";
+}
+function sxWhen(s){
+  const today=todayISO();
+  if(!s.date) return "Any day";
+  if(s.date===today) return "Today · "+sxPretty(s.date);
+  if(s.date===sxAddDays(today,1)) return "Tomorrow · "+sxPretty(s.date);
+  return sxPretty(s.date);
+}
+function sxStatus(s){
+  const c=sxCount(s.session_id), today=todayISO();
+  if(c.all && c.got>=c.all) return {cls:"st-done", text:"Done"};
+  if(c.got) return {cls:"st-part", text:c.got+" of "+c.all+" sets logged"};
+  if(!s.date || s.date>=today) return {cls:"st-next", text:s.date===today?"Ready to start":"Coming up"};
+  return {cls:"st-none", text:"Not logged"};
+}
+
+/* ---------- render: tab ---------- */
+function sxRender(){
+  const strip=document.getElementById("sx-strip"), main=document.getElementById("sx-main");
+  if(!strip || !main) return;
+  if(!SX.ok){
+    strip.innerHTML="";
+    main.innerHTML=`<div class="sx-empty">${SX.err==="setup"
+      ? "Your S&amp;C sessions aren't set up yet. Check back once your S&amp;C coach has published one."
+      : "Your S&amp;C sessions couldn't be loaded. Check your signal and pull down to refresh."}</div>`;
     return;
   }
-
-  wrap.innerHTML = s.dayOrder.map(day => `
-    <div class="strength-day">
-      <div class="day-label">${day}</div>
-      ${s.days[day].map(e => {
-        const exKey = [day, e.code].join("|");
-        const logged = s.loggedToday[exKey];
-        const exId = "ex_"+btoa(exKey).replace(/[^a-zA-Z0-9]/g,"");
-        const totalSets = e.sets||0;
-        const setCells = Array.from({length: totalSets}, (_,i)=>{
-          const n = i+1;
-          const wt = logged && logged.weights ? (logged.weights[i]||"") : "";
-          return `<div class="set-cell${logged?" logged":""}" data-ex="${exId}">
-            <span class="set-num">${n}</span>
-            <div class="wt-field"><input class="set-input" id="wt_${exId}_${n}" type="number" inputmode="decimal" placeholder="0" value="${wt}"><span class="wt-unit">kg</span></div>
-          </div>`;
-        }).join("");
-        const logBtn = totalSets ? `<button class="ex-log-btn${logged?" logged":""}" data-ex="${exId}" title="Log this exercise" onclick="logExercise('${slug.replace(/'/g,"\\'")}','${(playerName||"").replace(/'/g,"\\'")}','${s.mode}','${(s.block||"").replace(/'/g,"\\'")}','${day.replace(/'/g,"\\'")}','${e.code.replace(/'/g,"\\'")}','${e.exercise.replace(/'/g,"\\'")}',${totalSets},'${(e.reps||"").toString().replace(/'/g,"\\'")}','${exId}',this)">${logged?"\u2713 Logged":"Log exercise"}</button>` : "";
-        return `<div class="ex-row">
-          <div class="ex-top">
-            <span class="ex-name">${e.code?e.code+" · ":""}${e.exercise}</span>
-            <span class="ex-meta">${e.sets||"?"}x${e.reps||"?"}${e.tempo&&e.tempo!=="x"?" · tempo "+e.tempo:""}${e.rest&&e.rest.toUpperCase()!=="N/A"?" · rest "+e.rest:""}</span>
-          </div>
-          ${e.notes?`<div class="ex-notes">${e.notes}</div>`:""}
-          <div class="set-grid">${setCells}${logBtn}</div>
-        </div>`;
-      }).join("")}
-    </div>`).join("");
+  if(!SX.sessions.length){
+    strip.innerHTML="";
+    main.innerHTML=`<div class="sx-empty">No S&amp;C sessions for you yet.<br>They'll appear here as soon as your S&amp;C coach publishes one.</div>`;
+    return;
+  }
+  if(!SX.sel || !sxSession(SX.sel)) SX.sel=sxDefaultSel();
+  sxRenderStrip();
+  sxRenderMain();
 }
 
-async function logExercise(slug, name, mode, block, day, code, exercise, totalSets, prescribedReps, exId, btn){
-  const weights = [];
-  for(let n=1; n<=totalSets; n++){
-    const el = document.getElementById("wt_"+exId+"_"+n);
-    weights.push(el ? el.value.trim() : "");
-  }
-  const setsCompleted = weights.filter(w=>w!=="").length;
-  if(!setsCompleted) return;
+function sxRenderStrip(){
+  const strip=document.getElementById("sx-strip"), today=todayISO();
+  const items=sxStripList().map(s=>({date:s.date||"9999", time:s.start_time||"", s:s}));
+  /* upcoming games from the season schedule, for context */
+  (typeof SCHEDULE!=="undefined" && SCHEDULE ? SCHEDULE : []).forEach(ev=>{
+    if(!/game/i.test(ev.cat||"") || !ev.spanStart && ev.spans) return;
+    if(ev.iso<today || ev.iso>sxAddDays(today,7)) return;
+    items.push({date:ev.iso, time:ev.start||"", g:ev});
+  });
+  items.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  strip.innerHTML=items.map(it=>{
+    if(it.g){
+      const t=fmtTime(it.g);
+      return `<div class="sx-day game"><div class="sx-day-when">${sxEsc(sxPretty(it.date))}</div>
+        <div class="sx-day-name">${sxEsc(it.g.title)}</div><div class="sx-day-st st-game">Game${t?" · "+sxEsc(t):""}</div></div>`;
+    }
+    const s=it.s, st=sxStatus(s);
+    return `<button type="button" class="sx-day${s.session_id===SX.sel?" sel":""}${s.date===today?" today":""}" data-sid="${sxEsc(s.session_id)}"
+      onclick="sxPick(this.dataset.sid)" aria-pressed="${s.session_id===SX.sel}">
+      <div class="sx-day-when">${sxEsc(sxWhen(s))}</div>
+      <div class="sx-day-name">${sxEsc(s.name)}</div>
+      <div class="sx-day-st ${st.cls}">${st.text}</div></button>`;
+  }).join("");
+  const sel=strip.querySelector(".sx-day.sel");
+  if(sel && strip.scrollWidth>strip.clientWidth) strip.scrollLeft=Math.max(0, sel.offsetLeft-strip.offsetLeft-12);
+}
+function sxPick(sid){ SX.sel=sid; sxHoldStop(); sxRenderStrip(); sxRenderMain(); }
 
-  btn.disabled = true;
-  const originalLabel = btn.textContent;
-  btn.textContent = "\u2026";
+function sxRenderMain(){
+  const main=document.getElementById("sx-main"), s=sxSession(SX.sel);
+  if(!s){ main.innerHTML=""; return; }
+  const sid=s.session_id, xs=sxExercises(sid), c=sxCount(sid), today=todayISO();
+  const pct=c.all? Math.round(c.got/c.all*100) : 0;
+  const sub=[s.phase, s.location, s.start_time?to12h(s.start_time):"", s.est_min?"about "+s.est_min+" min":""].filter(Boolean).map(sxEsc).join(" · ");
+  const planned = s.date && s.date!==today
+    ? `<div class="sx-notice"><b>Planned</b>${sxEsc(sxPretty(s.date,true))}. You can do it any day — each set is saved with the day you log it.</div>` : "";
+  const sentInfo = SX.sent[sid] ? `<div class="sx-notice"><b>Sent to coach</b>You rated it ${sxEsc(SX.sent[sid].rpe)} / 10${SX.sent[sid].note?" · "+sxEsc(SX.sent[sid].note):""}.</div>` : "";
+  const cur=xs.findIndex(x=>sxExState(sid,x)!=="done");
+
+  let html=`<div class="sx-head">
+    <div class="sx-title-row"><div>
+      <div class="sx-eyebrow${s.date===today?"":" later"}">${sxEsc(s.date===today?"Today · "+sxPretty(s.date):(s.date?sxPretty(s.date):"Any day"))}</div>
+      <div class="sx-title">${sxEsc(s.name)}</div>
+      ${sub?`<div class="sx-sub">${sub}</div>`:""}
+    </div>
+    <button type="button" class="sx-gym-btn" onclick="sxGymOpen()"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>${c.got?"Carry on in gym mode":"Start in gym mode"}</button>
+    </div>
+    <div class="sx-prog"><div class="sx-bar"><i style="width:${pct}%"></i></div><div class="sx-pct">${pct}%</div></div>
+    ${planned}${sentInfo}
+  </div>`;
+
+  html+=xs.map((x,i)=>sxExCard(sid,x,i,i===cur&&c.got>0)).join("");
+
+  html+=`<div class="sx-finish"><div>${c.got} of ${c.all} sets logged. You can finish early — the coach sees what you did.</div>
+    <button type="button" class="sx-btn" onclick="sxDoneOpen()" ${c.got?"":"disabled"}>${SX.sent[sid]?"Session summary":"Finish session"}</button></div>`;
+  main.innerHTML=html;
+  sxHoldPaint();
+}
+
+const SX_TICK=`<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+function sxExCard(sid,x,i,isCur){
+  const st=sxExState(sid,x), last=sxLastTime(x), tgt=sxTarget(x);
+  const chip = st==="done" ? `<span class="sx-chip done">Done</span>` : st==="prog" ? `<span class="sx-chip prog">In progress</span>` : `<span class="sx-chip">Not started</span>`;
+  const media = (x.video||x.cues.length) ? `<div class="sx-media">
+      ${x.video?`<button type="button" class="sx-vid" ${ytThumbURL(x.video)?`style="background-image:url('${sxEsc(ytThumbURL(x.video))}')"`:""} onclick="sxVideo(${i})" aria-label="Play the coach demo for ${sxEsc(x.exercise)}"><span class="sx-play"></span><span class="sx-vid-tag">Coach demo</span></button>`:""}
+      ${x.cues.length?`<div><div class="sx-cues-h">Cues</div><ul class="sx-cues">${x.cues.map(c=>"<li>"+sxEsc(c)+"</li>").join("")}</ul></div>`:""}
+    </div>` : "";
+  const valLabel = x.time ? "Held (seconds)" : (x.each ? "Reps (each side)" : "Reps");
+  const head = x.time
+    ? `<div class="sx-row one hd"><div>${x.each?"Side":"Set"}</div><div>${valLabel}</div><div class="r">Done</div></div>`
+    : `<div class="sx-row hd"><div>Set</div><div>Weight (kg)${x.loadType==="bw"?" · optional":""}</div><div>${valLabel}</div><div class="r">Done</div></div>`;
+  const rows = x.lines.map(l=>{
+    const k=sxKey(sid,x,l), v=SX.lines[k], d=SX.draft[k]||{}, g=sxGhost(x,l,tgt,last);
+    const on=v&&v.state==="ok", busy=v&&v.state==="busy", err=v&&v.state==="err";
+    const wv = d.w!=null ? d.w : (v ? v.w : ""), rv = d.r!=null ? d.r : (v ? v.r : "");
+    const label = l.side ? (x.sets>1? l.set+" · "+l.side : l.side) : l.n;
+    const tick=`<button type="button" class="sx-tick${on?" on":""}${busy?" busy":""}${err?" err":""}" onclick="sxTick(${i},${l.n-1})"
+      aria-label="${on?"Logged — tap to save again":"Log "+(l.side?l.side.toLowerCase()+" side":"set "+l.n)}" aria-pressed="${!!on}">${SX_TICK}</button>`;
+    const rIn=`<input class="sx-in" type="number" inputmode="numeric" id="sxr_${i}_${l.n}" value="${sxEsc(rv)}" placeholder="${sxEsc(g.r)}"
+      oninput="sxDraft(${i},${l.n-1},'r',this.value)" aria-label="${sxEsc(valLabel)}, ${l.side||"set "+l.n}">`;
+    if(x.time) return `<div class="sx-row one"><div class="sx-setn${l.side?" side":""}">${label}</div><div>${rIn}</div>${tick}</div>`;
+    const wIn=`<input class="sx-in" type="number" inputmode="decimal" step="0.5" id="sxw_${i}_${l.n}" value="${sxEsc(wv)}" placeholder="${sxEsc(g.w)}"
+      oninput="sxDraft(${i},${l.n-1},'w',this.value)" aria-label="Weight in kg, set ${l.n}">`;
+    return `<div class="sx-row"><div class="sx-setn">${label}</div><div>${wIn}</div><div>${rIn}</div>${tick}</div>`;
+  }).join("");
+  const err = x.lines.some(l=>{ const v=SX.lines[sxKey(sid,x,l)]; return v&&v.state==="err"; });
+  const table=`<div>
+      ${tgt.text||last?`<div class="sx-target"><span>${tgt.text?"Target: <b>"+sxEsc(tgt.text)+"</b>":""}</span>${last?`<span>Last time: <b>${sxEsc(last.text)}</b> · ${sxEsc(sxPretty(last.date))}</span>`:""}</div>`:""}
+      <div class="sx-sets">${head}${rows}</div>
+      <div class="sx-hint${err?" bad":""}">${err?"A set didn't save — check your signal and tap its tick again.":(x.time?"Start the timer, or type the seconds you held. Tap the tick to log.":"Grey numbers are the target or last time's. Tap the tick to log a set as it is.")}</div>
+    </div>`;
+  const body = x.time
+    ? `<div class="sx-timed">${table}${sxTimerBox(sid,x,i,false)}</div>`
+    : table;
+  return `<div class="sx-ex${isCur?" cur":""}" id="sx-ex-${i}">
+    <div class="sx-ex-head"><span class="sx-code">${sxEsc(x.code)}</span><span class="sx-name">${sxEsc(x.exercise)}</span>
+      <div class="sx-chips"><span class="sx-chip mono">${sxEsc(sxPrescription(x))}</span>${x.rest?`<span class="sx-chip">Rest ${x.rest}s</span>`:""}${chip}</div></div>
+    <div class="sx-ex-body${media?"":" solo"}">${media}${body}</div></div>`;
+}
+function ytThumbURL(v){
+  const m=String(v||"").match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{6,})/);
+  return m? "https://i.ytimg.com/vi/"+m[1]+"/mqdefault.jpg" : "";
+}
+
+/* ---------- hold timer (timed exercises) ---------- */
+function sxNextLine(sid,x){ return x.lines.find(l=>{ const v=SX.lines[sxKey(sid,x,l)]; return !(v&&v.state==="ok"); }); }
+function sxTimerBox(sid,x,i,big){
+  const l=sxNextLine(sid,x);
+  if(!l) return `<div class="sx-timer"><div class="sx-timer-h">Hold timer</div><div class="sx-timer-note" style="margin-top:12px">All holds logged.</div></div>`;
+  const k=sxKey(sid,x,l), total=sxNum(x.amount)||30;
+  const label=l.side? l.side : "Set "+l.n;
+  return `<div class="sx-timer${big?" sx-g-timer":""}" data-hold="${sxEsc(k)}" data-total="${total}">
+    <div class="sx-timer-h">Hold timer · ${sxEsc(label)}</div>
+    <div class="sx-ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="44"/><circle class="fg" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg>
+      <div class="sx-ring-t"><span class="sx-hold-left">${sxClock(total)}</span><small>of ${sxClock(total)}</small></div></div>
+    <div class="sx-timer-btns"><button type="button" class="sx-btn sx-hold-go" onclick="sxHoldToggle(${i})">Start ${sxEsc(label.toLowerCase())}</button>
+      <button type="button" class="sx-btn ghost" onclick="sxHoldReset()" aria-label="Reset timer"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button></div>
+    <div class="sx-timer-note">Get into position, then tap start.</div></div>`;
+}
+function sxHoldToggle(i){
+  const s=sxSession(SX.sel), x=sxExercises(s.session_id)[i], l=sxNextLine(s.session_id,x); if(!l) return;
+  const k=sxKey(s.session_id,x,l), total=sxNum(x.amount)||30, H=SX.hold;
+  if(H.key!==k){ sxHoldStop(); H.key=k; H.total=total; H.left=total; H.ex=i; H.line=l.n-1; }
+  if(H.running){ clearInterval(H.t); H.running=false; sxHoldPaint(); return; }
+  if(H.left<=0) H.left=H.total;
+  H.running=true; H.end=Date.now()+H.left*1000;
+  H.t=setInterval(()=>{
+    H.left=(H.end-Date.now())/1000;
+    if(H.left<=0){
+      clearInterval(H.t); H.running=false; H.left=0;
+      const k2=H.key; sxDraftKey(k2,'r',String(H.total));
+      try{ navigator.vibrate && navigator.vibrate([200,100,200]); }catch(e){}
+      ["sxr_"+H.ex+"_"+(H.line+1), "sxg_r"].forEach(id=>{ const el=document.getElementById(id); if(el && (id!=="sxg_r" || SX.gym.on)) el.value=String(H.total); });
+    }
+    sxHoldPaint();
+  }, 200);
+  sxHoldPaint();
+}
+function sxHoldReset(){ const H=SX.hold; clearInterval(H.t); H.running=false; H.left=H.total; sxHoldPaint(); }
+function sxHoldStop(){ const H=SX.hold; clearInterval(H.t); H.running=false; H.key=""; H.left=0; }
+function sxHoldPaint(){
+  const H=SX.hold;
+  document.querySelectorAll("[data-hold]").forEach(box=>{
+    const mine=box.dataset.hold===H.key, total=+box.dataset.total;
+    const left= mine ? H.left : total;
+    const tl=box.querySelector(".sx-hold-left"); if(tl) tl.textContent=sxClock(left);
+    const fg=box.querySelector(".fg"); if(fg) fg.setAttribute("stroke-dashoffset", String(276.5*(1-Math.max(0,left)/total)));
+    const go=box.querySelector(".sx-hold-go"); if(!go) return;
+    const label=(box.querySelector(".sx-timer-h").textContent.split("·")[1]||"").trim().toLowerCase();
+    go.textContent = mine && H.running ? "Pause" : mine && H.left<=0 ? "Held — tap the tick" : mine && H.left<total ? "Resume" : "Start "+label;
+  });
+}
+
+/* ---------- logging ---------- */
+function sxDraft(i,li,f,v){ const s=sxSession(SX.sel), x=sxExercises(s.session_id)[i]; sxDraftKey(sxKey(s.session_id,x,x.lines[li]),f,v); }
+function sxDraftKey(k,f,v){ (SX.draft[k]=SX.draft[k]||{})[f]=v; }
+
+async function sxTick(i, li, fromGym){
+  const s=sxSession(SX.sel); if(!s) return;
+  const sid=s.session_id, x=sxExercises(sid)[i], l=x.lines[li], k=sxKey(sid,x,l);
+  const cur=SX.lines[k]; if(cur && cur.state==="busy") return;
+  const g=sxGhost(x,l,sxTarget(x),sxLastTime(x)), d=SX.draft[k]||{};
+  const w = x.time ? "" : String(d.w!=null && d.w!=="" ? d.w : (cur&&cur.w ? cur.w : g.w)).trim();
+  const r = String(d.r!=null && d.r!=="" ? d.r : (cur&&cur.r ? cur.r : g.r)).trim();
+  if(!r && !w){ sxToast("Enter what you did for this set first.", true); return; }
+  const prev=cur;
+  SX.lines[k]={w:w, r:r, date:todayISO(), state:"busy"};
+  if(!SX.firstTs[sid]) SX.firstTs[sid]=Date.now();
+  sxRefresh();
   try{
-    await fetch(CHECKIN_ENDPOINT, {
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({
-        type:"strength", slug, name, mode, block, day, code, exercise,
-        sets: setsCompleted, reps: prescribedReps, weights_kg: weights.join(",")
-      })
-    });
-    document.querySelectorAll('[data-ex="'+exId+'"]').forEach(el=>el.classList.add("logged"));
-    btn.textContent = "\u2713 Logged";
-    btn.classList.add("logged");
+    const res=await fetch(CHECKIN_ENDPOINT,{ method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, redirect:"follow",
+      body:JSON.stringify({ type:"strength", slug:SX.slug, name:SX.name, mode:"session", block:sid, day:s.name,
+        code:x.code, exercise:x.exercise, sets:l.n, reps:r, weights_kg:w, rpe:"", note:l.side||"" }) });
+    const out=await res.json();
+    if(!out.ok) throw new Error(out.error||"not saved");
+    SX.lines[k]={w:w, r:r, date:todayISO(), state:"ok"};
+    delete SX.draft[k];
+    if(SX.hold.key===k) sxHoldStop();
+    sxRefresh();
+    if(fromGym) sxGymAfterLog(i, li);
   }catch(e){
-    console.error("saveStrength failed:", e);
-    btn.textContent = originalLabel;
-  }finally{
-    btn.disabled = false;
+    console.error("set not saved:", e);
+    SX.lines[k]= prev && prev.state==="ok" ? prev : {w:w, r:r, state:"err"};
+    if(!(prev && prev.state==="ok")) sxDraftKey(k,'w',w), sxDraftKey(k,'r',r);
+    sxRefresh();
+    sxToast("Not saved — check your signal and try again.", true);
+  }
+}
+function sxRefresh(){ sxRenderStrip(); sxRenderMain(); if(SX.gym.on) sxGymRender(); if(document.getElementById("sx-done").classList.contains("on")) sxDoneRender(); }
+
+let SX_TOAST_T=null;
+function sxToast(msg, bad){
+  const t=document.getElementById("sx-toast"); t.textContent=msg; t.className="sx-toast"+(bad?" bad":""); t.style.display="block";
+  clearTimeout(SX_TOAST_T); SX_TOAST_T=setTimeout(()=>{ t.style.display="none"; }, 3500);
+}
+function sxVideo(i){
+  const s=sxSession(SX.sel), x=sxExercises(s.session_id)[i]; if(!x || !x.video) return;
+  const embed=ytEmbed(x.video);
+  if(!embed){ window.open(x.video,"_blank"); return; }
+  document.getElementById("vo-title").textContent=x.exercise;
+  document.getElementById("vo-meta").textContent="Coach demo";
+  document.getElementById("vo-iframe").src=embed;
+  document.getElementById("vo-note-bar").style.display="none";
+  const p=document.getElementById("vo-prev"); if(p) p.style.display="none";
+  document.getElementById("video-overlay").style.display="flex";
+}
+
+/* ---------- gym mode: one exercise at a time ---------- */
+function sxGymOpen(){
+  const s=sxSession(SX.sel); if(!s) return;
+  const xs=sxExercises(s.session_id);
+  let ex=xs.findIndex(x=>sxExState(s.session_id,x)!=="done"); if(ex<0) ex=0;
+  const l=sxNextLine(s.session_id,xs[ex]);
+  SX.gym={on:true, ex:ex, line:l? l.n-1 : 0};
+  document.getElementById("sx-gym").classList.add("on");
+  document.body.style.overflow="hidden";
+  sxGymRender();
+  try{ if(navigator.wakeLock) navigator.wakeLock.request("screen").then(w=>SX.wake=w).catch(()=>{}); }catch(e){}
+}
+function sxGymClose(){
+  SX.gym.on=false; sxRestStop(); sxHoldStop();
+  document.getElementById("sx-gym").classList.remove("on");
+  document.getElementById("sx-menu").classList.remove("on");
+  document.body.style.overflow="";
+  try{ SX.wake && SX.wake.release(); }catch(e){} SX.wake=null;
+  sxRenderMain();
+}
+function sxGymGo(ex){
+  const s=sxSession(SX.sel), x=sxExercises(s.session_id)[ex], l=sxNextLine(s.session_id,x);
+  SX.gym.ex=ex; SX.gym.line=l? l.n-1 : x.lines.length-1;
+  sxHoldStop(); document.getElementById("sx-menu").classList.remove("on");
+  sxGymRender(); document.getElementById("sx-gym").scrollTop=0;
+}
+function sxGymRender(){
+  const s=sxSession(SX.sel), box=document.getElementById("sx-gym-in"); if(!s || !box) return;
+  const sid=s.session_id, xs=sxExercises(sid), G=SX.gym, x=xs[G.ex]; if(!x) return;
+  const l=x.lines[G.line]||x.lines[0], k=sxKey(sid,x,l), tgt=sxTarget(x), last=sxLastTime(x), g=sxGhost(x,l,tgt,last);
+  const v=SX.lines[k], d=SX.draft[k]||{}, logged=v&&v.state==="ok";
+  const wv = d.w!=null ? d.w : (v ? v.w : g.w), rv = d.r!=null ? d.r : (v ? v.r : g.r);
+  const segs=xs.map((y,j)=>`<i class="${sxExState(sid,y)==="done"?"done":j===G.ex?"cur":""}"></i>`).join("");
+  const sub=[sxPrescription(x), x.rest?"rest "+x.rest+"s":"", last?"last time "+last.text:""].filter(Boolean).map(sxEsc).join(" · ");
+  const what = l.side ? (x.sets>1? "Set "+l.set+" · "+l.side : l.side+" side") : "Set "+l.n+" of "+x.sets;
+  const allDone = x.lines.every(m=>{ const q=SX.lines[sxKey(sid,x,m)]; return q&&q.state==="ok"; });
+  const next = xs.slice(G.ex+1).find(y=>sxExState(sid,y)!=="done") || xs.find((y,j)=>j<G.ex && sxExState(sid,y)!=="done");
+  const nextIdx = next? xs.indexOf(next) : -1;
+
+  let setCard;
+  if(allDone){
+    setCard=`<div class="sx-setcard"><div class="sx-setcard-h">All ${x.lines.length} ${x.time&&x.each?"holds":"sets"} logged</div>
+      <div class="sx-g-sub" style="margin-top:0">Tap a set below to change it, or move on.</div>
+      ${nextIdx>=0?`<button type="button" class="sx-big" onclick="sxGymGo(${nextIdx})">Next: ${sxEsc(next.exercise)}</button>`
+                 :`<button type="button" class="sx-big" onclick="sxDoneOpen()">Finish session</button>`}</div>`;
+  }else{
+    const step=(id,f,val,ph,inc,label,mode)=>`<div><div class="sx-step-l">${label}</div><div class="sx-step">
+      <button type="button" onclick="sxStep('${f}',-${inc})" aria-label="Less">−</button>
+      <input id="${id}" type="number" inputmode="${mode}" value="${sxEsc(val)}" placeholder="${sxEsc(ph)}" oninput="sxGymInput('${f}',this.value)" aria-label="${label}">
+      <button type="button" onclick="sxStep('${f}',${inc})" aria-label="More">+</button></div></div>`;
+    const steps = x.time
+      ? `<div class="sx-steps one">${step("sxg_r","r",rv,g.r,5,"Seconds held","numeric")}</div>`
+      : `<div class="sx-steps">${step("sxg_w","w",wv,g.w||"0",2.5,"Weight (kg)"+(x.loadType==="bw"?" · optional":""),"decimal")}${step("sxg_r","r",rv,g.r,1,x.each?"Reps each side":"Reps","numeric")}</div>`;
+    const busy=v&&v.state==="busy";
+    setCard=`${x.time?sxTimerBox(sid,x,G.ex,true):""}
+      <div class="sx-setcard"><div class="sx-setcard-h">${sxEsc(what)}</div>${steps}
+      <button type="button" class="sx-big" onclick="sxTick(${G.ex},${G.line},true)" ${busy?"disabled":""}>${busy?"Saving…":logged?"Save "+sxEsc(what.toLowerCase())+" again":"Log "+sxEsc(what.toLowerCase())}</button></div>`;
+  }
+  const done=x.lines.filter(m=>{ const q=SX.lines[sxKey(sid,x,m)]; return q&&(q.state==="ok"||q.state==="err"); });
+  const logList = done.length ? `<div class="sx-g-log">${done.map(m=>{
+      const q=SX.lines[sxKey(sid,x,m)], lab=m.side?(x.sets>1?m.set+" "+m.side:m.side):"Set "+m.n;
+      const val = x.time ? (q.r||"?")+" s" : (q.w?sxFmtKg(sxNum(q.w))+" kg × ":"")+(q.r||"?")+(q.w?"":" reps");
+      return `<div role="button" tabindex="0" onclick="sxGymLine(${m.n-1})" style="cursor:pointer"><span>${sxEsc(lab)}</span><b>${sxEsc(val)}</b>${q.state==="ok"?"<em>✓ Logged</em>":"<em class='bad'>Not saved</em>"}</div>`;
+    }).join("")}</div>` : "";
+  const vid = x.video ? `<button type="button" class="sx-vid sx-g-vid" ${ytThumbURL(x.video)?`style="background-image:url('${sxEsc(ytThumbURL(x.video))}')"`:""} onclick="sxVideo(${G.ex})" aria-label="Play the coach demo"><span class="sx-play"></span><span class="sx-vid-tag">Coach demo</span></button>` : "";
+  const rest = SX.rest.left>0 ? `<div class="sx-rest" id="sx-rest"><span class="sx-rest-l">Rest</span><span class="sx-rest-t" id="sx-rest-t">${sxClock(SX.rest.left)}</span>
+      <button type="button" onclick="sxRestAdd(15)">+15s</button><button type="button" class="solid" onclick="sxRestStop();sxGymRender()">Skip</button></div>` : "";
+
+  box.innerHTML=`<div class="sx-g-top">
+      <button type="button" class="sx-back" onclick="sxGymClose()" aria-label="Leave gym mode"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>${sxEsc(s.name)}</button>
+      <span class="sx-g-count">Exercise ${G.ex+1} of ${xs.length}</span>
+      <button type="button" class="sx-icon-btn" onclick="sxMenu()" aria-label="All exercises"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+    <div class="sx-segs">${segs}</div>
+    ${vid}
+    <div><div class="sx-g-name"><span>${sxEsc(x.code)}</span>${sxEsc(x.exercise)}</div><div class="sx-g-sub">${sub}</div></div>
+    ${tgt.text?`<div class="sx-g-target">Target: <b>${sxEsc(tgt.text)}</b></div>`:""}
+    ${x.cues.length?`<div class="sx-g-sub" style="margin-top:-6px">${x.cues.map(sxEsc).join(" · ")}</div>`:""}
+    ${rest}${setCard}${logList}
+    ${nextIdx>=0&&!allDone?`<button type="button" class="sx-next" onclick="sxGymGo(${nextIdx})"><span><b>NEXT</b>${sxEsc(next.code)} · ${sxEsc(next.exercise)}</span><span>${sxEsc(sxPrescription(next))}</span></button>`
+      : (!allDone && nextIdx<0 ? `<button type="button" class="sx-next" onclick="sxDoneOpen()"><span><b>LAST ONE</b>then finish the session</span><span>›</span></button>` : "")}`;
+  sxHoldPaint();
+}
+function sxGymLine(li){ SX.gym.line=li; sxHoldStop(); sxGymRender(); }
+function sxGymInput(f,v){
+  const s=sxSession(SX.sel), x=sxExercises(s.session_id)[SX.gym.ex];
+  sxDraftKey(sxKey(s.session_id,x,x.lines[SX.gym.line]), f, v);
+}
+function sxStep(f,inc){
+  const el=document.getElementById("sxg_"+f); if(!el) return;
+  const base=sxNum(el.value!==""?el.value:el.placeholder)||0;
+  const nv=Math.max(0, Math.round((base+inc)*10)/10);
+  el.value=sxFmtKg(nv); sxGymInput(f, el.value);
+}
+function sxGymAfterLog(i, li){
+  const s=sxSession(SX.sel), sid=s.session_id, xs=sxExercises(sid), x=xs[i];
+  const nl=sxNextLine(sid,x);
+  if(nl){ SX.gym.line=nl.n-1; if(x.rest && !(x.time && x.each && x.lines[li].side==="Left")) sxRestStart(x.rest); sxGymRender(); return; }
+  const nx=xs.findIndex(y=>sxExState(sid,y)!=="done");
+  if(nx<0){ sxRestStop(); sxDoneOpen(); return; }
+  if(x.rest) sxRestStart(x.rest);
+  sxGymGo(nx);
+}
+function sxMenu(){
+  const s=sxSession(SX.sel), sid=s.session_id, xs=sxExercises(sid);
+  document.getElementById("sx-menu-list").innerHTML=xs.map((x,j)=>{
+    const st=sxExState(sid,x), got=x.lines.filter(l=>{const q=SX.lines[sxKey(sid,x,l)];return q&&q.state==="ok";}).length;
+    return `<button type="button" class="${j===SX.gym.ex?"cur":""}" onclick="sxGymGo(${j})"><span>${sxEsc(x.code)} · ${sxEsc(x.exercise)}</span><span>${st==="done"?"✓ Done":got?got+" of "+x.lines.length:sxEsc(sxPrescription(x))}</span></button>`;
+  }).join("")+`<button type="button" onclick="sxDoneOpen()"><span>Finish session</span><span>${sxCount(sid).got} sets logged</span></button>`;
+  document.getElementById("sx-menu").classList.add("on");
+}
+function sxRestStart(sec){
+  const R=SX.rest; clearInterval(R.t); R.total=sec; R.end=Date.now()+sec*1000; R.left=sec;
+  R.t=setInterval(()=>{
+    R.left=(R.end-Date.now())/1000;
+    const t=document.getElementById("sx-rest-t");
+    if(R.left<=0){ sxRestStop(); try{ navigator.vibrate && navigator.vibrate(300); }catch(e){} if(SX.gym.on) sxGymRender(); return; }
+    if(t) t.textContent=sxClock(R.left);
+  }, 250);
+}
+function sxRestAdd(n){ const R=SX.rest; if(R.left<=0) return; R.end+=n*1000; R.left+=n; const t=document.getElementById("sx-rest-t"); if(t) t.textContent=sxClock(R.left); }
+function sxRestStop(){ const R=SX.rest; clearInterval(R.t); R.left=0; }
+
+/* ---------- session complete ---------- */
+function sxDoneOpen(){
+  const s=sxSession(SX.sel); if(!s) return;
+  if(!sxCount(s.session_id).got){ sxToast("Log at least one set first.", true); return; }
+  const sent=SX.sent[s.session_id];
+  SX.done={ rpe: sent? (parseInt(sent.rpe,10)||0) : 0, tags:{}, note:"", sending:false };
+  document.getElementById("sx-menu").classList.remove("on");
+  document.getElementById("sx-done").classList.add("on");
+  document.body.style.overflow="hidden";
+  sxDoneRender();
+  document.getElementById("sx-done").scrollTop=0;
+}
+function sxDoneClose(){
+  document.getElementById("sx-done").classList.remove("on");
+  if(!SX.gym.on) document.body.style.overflow="";
+  sxRefresh();
+}
+function sxDoneBack(){ /* "Review my log": leave gym mode too, so the whole session shows */
+  document.getElementById("sx-done").classList.remove("on");
+  if(SX.gym.on) sxGymClose(); else { document.body.style.overflow=""; sxRefresh(); }
+  window.scrollTo({top:0});
+}
+function sxDoneRender(){
+  const s=sxSession(SX.sel), sid=s.session_id, xs=sxExercises(sid), c=sxCount(sid), today=todayISO();
+  const exDone=xs.filter(x=>sxExState(sid,x)==="done").length;
+  const mins = SX.firstTs[sid] ? Math.max(1, Math.round((Date.now()-SX.firstTs[sid])/60000)) : null;
+  const sub=[sxPretty(today), mins&&mins<240? mins+" min" : "", s.phase].filter(Boolean).map(sxEsc).join(" · ");
+  /* this week: sessions planned Mon–Sun, and how many have anything logged */
+  const mon=sxMonday(today), sun=sxAddDays(mon,6);
+  const wk=SX.sessions.filter(z=>z.date>=mon && z.date<=sun);
+  const wkLogged=wk.filter(z=>sxCount(z.session_id).got>0).length;
+  /* biggest new best today */
+  let best=null;
+  xs.forEach(x=>{
+    if(x.time) return;
+    const prev=sxBestBefore(x); if(prev==null) return;
+    let top=null, reps="";
+    x.lines.forEach(l=>{ const q=SX.lines[sxKey(sid,x,l)]; const w=q&&q.state==="ok"?sxNum(q.w):null; if(w!=null && (top==null||w>top)){ top=w; reps=q.r; } });
+    if(top!=null && top>prev && (!best || top-prev>best.up)) best={x:x, top:top, reps:reps, up:top-prev, last:sxLastTime(x)};
+  });
+  const sent=SX.sent[sid], D=SX.done;
+  const tiles=`<div class="sx-tiles"><div class="sx-tile"><div>Exercises</div><b>${exDone}/${xs.length}</b></div>
+    <div class="sx-tile"><div>Sets</div><b>${c.got}/${c.all}</b></div>
+    <div class="sx-tile"><div>This week</div><b>${wk.length?wkLogged+"/"+wk.length:"—"}</b></div></div>`;
+  const bestBox = best ? `<div class="sx-best"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+    <div><b>New best · ${sxEsc(best.x.exercise)}</b><span>${sxFmtKg(best.top)} kg × ${sxEsc(best.reps||"?")} — up ${sxFmtKg(best.up)} kg on your previous best</span></div></div>` : "";
+  let form;
+  if(sent && !D.edit){
+    form=`<div class="sx-notice" style="margin-top:0"><b>Sent</b>You rated this session ${sxEsc(sent.rpe)} / 10${sent.note?" · "+sxEsc(sent.note):""}.</div>
+      <button type="button" class="sx-big ghost" onclick="SX.done.edit=true;sxDoneRender()">Send an update</button>`;
+  }else{
+    form=`<div><div class="sx-q">How hard was that? <small>(1 easy – 10 max)</small></div>
+      <div class="sx-rpe" role="group" aria-label="Session effort, 1 to 10">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button type="button" class="${D.rpe===n?"on":""}" aria-pressed="${D.rpe===n}" onclick="SX.done.rpe=${n};sxDoneRender()">${n}</button>`).join("")}</div>
+      <div class="sx-rpe-d">${D.rpe? D.rpe+" · "+SX_RPE_TEXT[D.rpe] : ""}</div></div>
+      <div><div class="sx-q">Anything the coach should know?</div>
+      <div class="sx-tags">${SX_TAGS.map((t,j)=>`<button type="button" class="${D.tags[t]?"on":""}" aria-pressed="${!!D.tags[t]}" onclick="sxDoneTag(${j})">${sxEsc(t)}</button>`).join("")}</div>
+      <textarea class="sx-note" id="sx-done-note" placeholder="Optional note" maxlength="500" oninput="SX.done.note=this.value">${sxEsc(D.note)}</textarea>
+      <div class="sx-who">Goes to your S&amp;C coach. Like your check-in notes, it is saved on the team sheet the staff use.</div></div>
+      <button type="button" class="sx-big" onclick="sxDoneSend()" ${!D.rpe||D.sending?"disabled":""}>${D.sending?"Sending…":"Send to coach"}</button>`;
+  }
+  document.getElementById("sx-done-in").innerHTML=`
+    <div class="sx-done-top"><div class="sx-done-ic"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <div><div class="sx-done-t">${sxEsc(s.name)} ${c.got>=c.all?"done":"— finished early"}</div><div class="sx-done-s">${sub}</div></div></div>
+    ${tiles}${bestBox}${form}
+    <button type="button" class="sx-link" onclick="sxDoneBack()">Review my log</button>`;
+}
+function sxDoneTag(j){ const t=SX_TAGS[j]; SX.done.tags[t]=!SX.done.tags[t]; const n=document.getElementById("sx-done-note"); if(n) SX.done.note=n.value; sxDoneRender(); }
+async function sxDoneSend(){
+  const s=sxSession(SX.sel), D=SX.done; if(!s || !D.rpe || D.sending) return;
+  const tags=SX_TAGS.filter(t=>D.tags[t]);
+  const note=[tags.join(" · "), (D.note||"").trim()].filter(Boolean).join(" — ");
+  D.sending=true; sxDoneRender();
+  try{
+    const res=await fetch(CHECKIN_ENDPOINT,{ method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, redirect:"follow",
+      body:JSON.stringify({ type:"strength", slug:SX.slug, name:SX.name, mode:"session", block:s.session_id, day:s.name,
+        code:"SESSION", exercise:"", sets:sxCount(s.session_id).got, reps:"", weights_kg:"", rpe:D.rpe, note:note }) });
+    const out=await res.json();
+    if(!out.ok) throw new Error(out.error||"not saved");
+    SX.sent[s.session_id]={rpe:String(D.rpe), note:note, date:todayISO()};
+    D.sending=false; D.edit=false;
+    sxDoneRender(); sxToast("Sent to your coach. Good work.");
+  }catch(e){
+    console.error("session feedback not saved:", e);
+    D.sending=false; sxDoneRender();
+    sxToast("Not sent — check your signal and tap Send again.", true);
   }
 }
 
@@ -2145,6 +2859,12 @@ loadPortal();
     <div class="ci-msg" id="ci-msg"></div>
   </div>
 </div>
+
+<!-- S&C gym mode, exercise menu, session complete -->
+<div class="sx-ov" id="sx-gym" role="dialog" aria-modal="true" aria-label="Gym mode"><div class="sx-ov-in" id="sx-gym-in"></div></div>
+<div class="sx-menu" id="sx-menu" onclick="if(event.target===this)this.classList.remove('on')"><div class="sx-menu-in"><div class="sx-menu-h">Exercises</div><div id="sx-menu-list"></div></div></div>
+<div class="sx-ov" id="sx-done" role="dialog" aria-modal="true" aria-label="Session complete"><div class="sx-ov-in" id="sx-done-in"></div></div>
+<div class="sx-toast" id="sx-toast" role="status" aria-live="polite"></div>
 
 </body>
 </html>
