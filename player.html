@@ -92,6 +92,13 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .mt-pos{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,131,72,0.3)}
 .mt-season{background:rgba(250,249,246,0.07);color:var(--muted);border:1px solid var(--border-soft)}
 .mt-status{background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
+/* Shooting assessment medals (Shooting Scores tab, Practice Plan sheet) */
+.mt-medal{display:inline-flex;align-items:center;gap:5px;padding:2px 6px 2px 9px;letter-spacing:.2px;
+  background:rgba(250,249,246,0.06);border:1px solid var(--medal-edge);color:var(--medal-text)}
+.mt-medal svg{width:17px;height:17px;margin:-1px 0;overflow:visible;flex-shrink:0;display:block}
+.mt-medal.m1{--medal-edge:rgba(242,196,77,0.55);--medal-text:#f6d77a}
+.mt-medal.m2{--medal-edge:rgba(208,214,222,0.5);--medal-text:#dfe4ea}
+.mt-medal.m3{--medal-edge:rgba(214,142,86,0.55);--medal-text:#e7a77a}
 
 /* TABS — Home / Basketball Development / Strength & Conditioning */
 .tab-bar{display:flex;gap:6px;max-width:980px;margin:18px auto 0;padding:0 32px;position:sticky;top:0;
@@ -598,6 +605,7 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
         <span class="meta-tag mt-pos" id="player-pos"></span>
         <span class="meta-tag mt-season" id="season-tag"></span>
         <span class="meta-tag mt-status">✓ Active</span>
+        <span id="medals" style="display:contents"></span>
       </div>
     </div>
     <img class="ph-photo" id="ph-photo" alt="">
@@ -672,6 +680,15 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
         <div class="focus-grid" id="focus-grid"></div>
       </div>
 
+      <!-- GAME VIDEOS -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">Games &amp; Scouting</div>
+          <a class="sec-link" id="game-video-link" href="/game-videos">See all <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="video-list" id="games-preview"></div>
+      </div>
+
       <!-- VIDEO -->
       <div class="section">
         <div class="section-header"><div class="section-title">Video Feedback</div></div>
@@ -685,15 +702,6 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
           <a class="sec-link" id="practice-video-link" href="/practice-videos">See all <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
         </div>
         <div class="video-list" id="practice-preview"></div>
-      </div>
-
-      <!-- GAME VIDEOS -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Games &amp; Scouting</div>
-          <a class="sec-link" id="game-video-link" href="/game-videos">See all <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
-        </div>
-        <div class="video-list" id="games-preview"></div>
       </div>
     </div>
 
@@ -748,6 +756,59 @@ const STRENGTH_LOG_TAB = "STRENGTH LOG"; // tab name on the MAIN sheet
    own pages — already public, so a third reader here doesn't change exposure. */
 const PRACTICE_URLS={"practices":"https://docs.google.com/spreadsheets/d/e/2PACX-1vQKRFsRCVYbEDikkCWXUjHub2GdNPv3MjlRabHOffhhKixskBbM-L265fHu8j1LH1nEGPYTngmhWe7k/pub?single=true&output=csv&gid=798917355"};
 const GAMES_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQKRFsRCVYbEDikkCWXUjHub2GdNPv3MjlRabHOffhhKixskBbM-L265fHu8j1LH1nEGPYTngmhWe7k/pub?single=true&output=csv&gid=148193840";
+
+/* --- Shooting assessment medals (player header) ---
+   "Shooting Scores" tab on the Practice Plan sheet, published with the
+   Practices and Games tabs. Column A = player first name, then one column
+   per test ("take 50", "FT Doubles", ...). Every test with scores gives
+   gold / silver / bronze to the top three scores across EVERYONE on the tab
+   (including anyone without a portal), ties sharing the medal. */
+const SHOOTING_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQKRFsRCVYbEDikkCWXUjHub2GdNPv3MjlRabHOffhhKixskBbM-L265fHu8j1LH1nEGPYTngmhWe7k/pub?single=true&output=csv&gid=251643764";
+const MEDAL_NAMES=["Gold","Silver","Bronze"];
+const MEDAL_FILL=[["#fde68a","#d4a017","#a8790c"],["#f1f4f7","#b8c0ca","#87909c"],["#f3c19a","#c47a3f","#8f5226"]];
+
+function medalKey(s){return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g,"").replace(/\s+/g," ").trim();}
+function medalTestLabel(h){
+  h=String(h||"").trim();
+  return h.charAt(0).toUpperCase()+h.slice(1);   /* "take 50" -> "Take 50" */
+}
+function medalSVG(place){
+  const [hi,mid,lo]=MEDAL_FILL[place], id="mg"+place;
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${hi}"/><stop offset=".55" stop-color="${mid}"/><stop offset="1" stop-color="${lo}"/></linearGradient></defs>
+    <path d="M7.2 2.2h3.6l2.1 6.6-3.2 1.3z" fill="#0d7a45"/><path d="M16.8 2.2h-3.6l-2.1 6.6 3.2 1.3z" fill="#008348"/>
+    <circle cx="12" cy="15" r="7.4" fill="url(#${id})" stroke="${lo}" stroke-width=".9"/>
+    <circle cx="12" cy="15" r="5.3" fill="none" stroke="${hi}" stroke-opacity=".75" stroke-width=".8"/>
+    <text x="12" y="18.1" text-anchor="middle" font-family="Space Grotesk,Inter,sans-serif" font-size="8.4" font-weight="700" fill="${lo}">${place+1}</text>
+  </svg>`;
+}
+
+async function loadShootingMedals(player){
+  const el=document.getElementById("medals");
+  if(!el||!player)return;
+  try{
+    const res=await fetch(SHOOTING_URL+"&cachebust="+Date.now());
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const rows=parseCSV(await res.text());
+    if(!rows.length)return;
+    const head=rows[0], body=rows.slice(1).filter(r=>(r[0]||"").trim());
+    const full=medalKey(player.name), first=full.split(" ")[0], tab=medalKey(player.tab);
+    const isMe=n=>{const k=medalKey(n);return k&&(k===full||k===first||k===tab);};
+    const won=[];
+    for(let c=1;c<head.length;c++){
+      if(!String(head[c]||"").trim())continue;
+      const scored=body.map(r=>({name:r[0],score:parseFloat(String(r[c]||"").replace(",","."))}))
+                       .filter(x=>isFinite(x.score));
+      if(!scored.length)continue;
+      /* competition ranking: place = number of people with a strictly higher score */
+      const mine=scored.find(x=>isMe(x.name));
+      if(!mine)continue;
+      const place=scored.filter(x=>x.score>mine.score).length;
+      if(place<3)won.push({test:medalTestLabel(head[c]),place,score:mine.score});
+    }
+    el.innerHTML=won.map(m=>`<span class="meta-tag mt-medal m${m.place+1}" title="${MEDAL_NAMES[m.place]} · ${m.test} · ${m.score}">${m.test}${medalSVG(m.place)}</span>`).join("");
+  }catch(e){console.warn("shooting scores unreadable:",e);}
+}
 
 /* Live read of any tab by NAME (not gid) so renaming/adding tabs just works.
    headers=0 stops Google guessing which row is a header and merging rows. */
@@ -1043,6 +1104,7 @@ async function loadPortal(){
     renderLoad(loadEntries);
     renderPracticePreview(practicePreview);
     renderGamesPreview(gamesPreview);
+    loadShootingMedals(player);
     loadTreatmentBookings();
   }catch(e){
     console.error("player tab fetch failed:",player.tab,e);
