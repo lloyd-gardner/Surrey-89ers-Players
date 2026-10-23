@@ -365,6 +365,8 @@ body{font-family:"Inter",sans-serif;background:#080f0b;color:var(--offwhite);min
 .sx-pct{font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:700;min-width:36px;text-align:right}
 .sx-notice{margin-top:12px;border:1px solid var(--border-soft);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--offwhite-mid);line-height:1.5}
 .sx-notice b{color:#4ade80;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;margin-right:8px}
+.sx-notice.coach{border-color:rgba(74,222,128,0.35);background:rgba(0,131,72,0.10);color:var(--offwhite)}
+.sx-notice.coach small{display:block;color:var(--offwhite-mid);font-size:11px;margin-top:2px}
 
 .sx-ex{background:var(--card);border:1px solid var(--border-soft);border-radius:12px;margin-bottom:12px;overflow:hidden}
 .sx-ex.cur{border-color:rgba(96,200,250,.45)}
@@ -1664,13 +1666,16 @@ const SX_SESSION_COLS = ["session_id","name","date","start_time","location","pha
 const SX_ROW_COLS = ["session_id","order","block","code","exercise_id","exercise","measure","sets","amount","each_side","load_type","load","rest_s","video_url","cues"];
 const SX_LIB_COLS = ["exercise_id","name","type","tags","measure","sets","amount","each_side","load_type","load","rest_s","video_url","cues","archived","updated_at"];
 const SX_LOG_COLS = ["timestamp","date","slug","name","mode","block","day","code","exercise","sets","reps","weights_kg","rpe","note"];
+/* Coach comments on a player's session, written from the Performance Hub's
+   session feed to the COMMENTS tab of the Strength Program sheet. */
+const SX_COMMENT_COLS = ["comment_id","session_id","slug","comment","created_at","archived"];
 const SX_TAGS = ["Felt great","Low energy","Legs heavy","Tight somewhere","Pain — talk to me"];
 const SX_RPE_TEXT = ["","Very easy","Easy","Easy — plenty left","Moderate","Moderate — about 5 reps left",
   "Fairly hard — about 4 reps left","Hard — about 3 reps left","Very hard — about 2 reps left",
   "Very hard — 1 rep left","Max — nothing left"];
 
 const SX = {
-  ok:false, slug:"", name:"", sessions:[], rows:{}, lib:{}, log:[],
+  ok:false, slug:"", name:"", sessions:[], rows:{}, lib:{}, log:[], comments:{},
   sel:"", lines:{}, draft:{}, sent:{}, firstTs:{},
   gym:{on:false, ex:0, line:0}, rest:{left:0, total:0, t:null},
   hold:{key:"", left:0, total:0, t:null, running:false},
@@ -1734,12 +1739,19 @@ async function sxRead(url, cols, idCol){
 async function sxLoad(slug, playerName){
   SX.slug=slug; SX.name=playerName||"";
   try{
-    const [ses, rows, lib, log] = await Promise.all([
+    const [ses, rows, lib, log, cmts] = await Promise.all([
       sxRead(strengthTabURL(SX_TABS.sessions), SX_SESSION_COLS, "session_id"),
       sxRead(strengthTabURL(SX_TABS.rows), SX_ROW_COLS, "session_id"),
       sxRead(strengthTabURL(SX_TABS.lib), SX_LIB_COLS, "exercise_id").catch(()=>[]),
-      sxRead(tabURL(STRENGTH_LOG_TAB), SX_LOG_COLS).catch(e=>{ console.error("STRENGTH LOG not readable:",e); return []; })
+      sxRead(tabURL(STRENGTH_LOG_TAB), SX_LOG_COLS).catch(e=>{ console.error("STRENGTH LOG not readable:",e); return []; }),
+      sxRead(strengthTabURL("COMMENTS"), SX_COMMENT_COLS, "comment_id").catch(()=>null)
     ]);
+    SX.comments={};
+    (cmts||[]).forEach(c=>{
+      if(c.slug.toLowerCase()!==slug || sxTrue(c.archived) || !c.comment) return;
+      (SX.comments[c.session_id]=SX.comments[c.session_id]||[]).push(c);
+    });
+    Object.keys(SX.comments).forEach(k=>SX.comments[k].sort((a,b)=>a.created_at.localeCompare(b.created_at)));
     if(ses===null || rows===null){ SX.err="setup"; return; }
     SX.lib={}; (lib||[]).forEach(x=>{ if(x.exercise_id) SX.lib[x.exercise_id]=x; });
     SX.rows={};
@@ -1982,6 +1994,7 @@ function sxRenderMain(){
   const planned = s.date && s.date!==today
     ? `<div class="sx-notice"><b>Planned</b>${sxEsc(sxPretty(s.date,true))}. You can do it any day — each set is saved with the day you log it.</div>` : "";
   const sentInfo = SX.sent[sid] ? `<div class="sx-notice"><b>Sent to coach</b>You rated it ${sxEsc(SX.sent[sid].rpe)} / 10${SX.sent[sid].note?" · "+sxEsc(SX.sent[sid].note):""}.</div>` : "";
+  const coach = (SX.comments[sid]||[]).map(c=>`<div class="sx-notice coach"><b>From your coach</b>${sxEsc(c.comment)}${c.created_at?`<small>${sxEsc(sxPretty(c.created_at.slice(0,10)))} · ${sxEsc(c.created_at.slice(11,16))}</small>`:""}</div>`).join("");
   const cur=xs.findIndex(x=>sxExState(sid,x)!=="done");
 
   let html=`<div class="sx-head">
@@ -1993,7 +2006,7 @@ function sxRenderMain(){
     <button type="button" class="sx-gym-btn" onclick="sxGymOpen()"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>${c.got?"Carry on in gym mode":"Start in gym mode"}</button>
     </div>
     <div class="sx-prog"><div class="sx-bar"><i style="width:${pct}%"></i></div><div class="sx-pct">${pct}%</div></div>
-    ${planned}${sentInfo}
+    ${planned}${sentInfo}${coach}
   </div>`;
 
   html+=xs.map((x,i)=>sxExCard(sid,x,i,i===cur&&c.got>0)).join("");
