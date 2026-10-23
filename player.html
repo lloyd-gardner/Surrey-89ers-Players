@@ -1675,7 +1675,7 @@ const SX_RPE_TEXT = ["","Very easy","Easy","Easy — plenty left","Moderate","Mo
   "Very hard — 1 rep left","Max — nothing left"];
 
 const SX = {
-  ok:false, slug:"", name:"", sessions:[], rows:{}, lib:{}, log:[], comments:{},
+  ok:false, slug:"", name:"", sessions:[], rows:{}, lib:{}, log:[], comments:{}, want:"",
   sel:"", lines:{}, draft:{}, sent:{}, firstTs:{},
   gym:{on:false, ex:0, line:0}, rest:{left:0, total:0, t:null},
   hold:{key:"", left:0, total:0, t:null, running:false},
@@ -1952,6 +1952,8 @@ function sxRender(){
     main.innerHTML=`<div class="sx-empty">No S&amp;C sessions for you yet.<br>They'll appear here as soon as your S&amp;C coach publishes one.</div>`;
     return;
   }
+  /* a notification opens the session it is about: ?tab=strength&session=<id> */
+  if(!SX.sel && SX.want){ if(sxSession(SX.want)) SX.sel=SX.want; SX.want=""; }
   if(!SX.sel || !sxSession(SX.sel)) SX.sel=sxDefaultSel();
   sxRenderStrip();
   sxRenderMain();
@@ -2893,9 +2895,12 @@ function portalReady(){
     var q = new URLSearchParams(location.search);
     var tab = q.get("tab");
     if(tab === "dev" || tab === "strength") switchTab(tab);
+    var hadSession = q.has("session");
+    if(q.get("session")){ SX.want = q.get("session");
+      if(SX.ok && sxSession(SX.want)){ sxPick(SX.want); SX.want = ""; } }
     if(q.get("checkin") === "1" && !LOG_ENTRIES.some(function(e){ return e.date === todayISO(); })) openCheckIn();
-    if(tab || q.has("checkin")){
-      q.delete("tab"); q.delete("checkin");
+    if(tab || q.has("checkin") || hadSession){
+      q.delete("tab"); q.delete("checkin"); q.delete("session");
       var rest = q.toString();
       history.replaceState(null, "", location.pathname + (rest ? "?" + rest : ""));
     }
